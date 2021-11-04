@@ -19,7 +19,6 @@
      train
 
 1.　Prepare training dataset for each tRNA
-![image](https://user-images.githubusercontent.com/70622849/140273121-1d7312ee-d1e9-4891-aa3d-dc2a4a86853d.png)
   - Read fast5, format(trimmed) and convert it to parquet file
      
     python tyCooNN.py makeparqueteach     
@@ -36,7 +35,9 @@
 
         -ls, --listOfIOPath
         -p, --paramPath,default='settings.yaml'
-              
+
+![image](https://user-images.githubusercontent.com/70622849/140273121-1d7312ee-d1e9-4891-aa3d-dc2a4a86853d.png)
+
 2. train  CNN
   - train CNN model using isolated tRNA data sets and save weight
      
