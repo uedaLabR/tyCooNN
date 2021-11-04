@@ -105,12 +105,12 @@
   
   Analysis/Basecall_1D_099　<br>
   
-            tRNA : tRNA label　<br>
-            tRNAIndex :tRNA Index　<br>
-            value: inference value (0-1)　<br>
-            filterpass: filter pass　<br>
-            filterflg: filter flg <br>
-            trimSuccess: trimSuccess　<br>
+            tRNA : tRNA label　
+            tRNAIndex :tRNA Index　
+            value: inference value (0-1)　
+            filterpass: filter pass　
+            filterflg: filter flg 
+            trimSuccess: trimSuccess　
   
   
   
