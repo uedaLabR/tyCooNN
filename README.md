@@ -1,4 +1,4 @@
-# tyCooNN
+# tyCooNN  ## (tīˈko͞on)
 
  About : tRNA expression Analysis using 1D-CNN
 
