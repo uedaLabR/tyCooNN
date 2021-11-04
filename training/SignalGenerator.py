@@ -35,6 +35,7 @@ def formatY(Y,num_classes):
    Y = np.reshape(Y, (-1, 1,))
    return keras.utils.to_categorical(Y, num_classes)
 
+import matplotlib.pyplot as plot
 class ArgumentlGenerator(object):
 
     def __init__(self,x, y, batch_size,signal_size, class_count, augmentation_factor,epoch):
@@ -65,6 +66,12 @@ class ArgumentlGenerator(object):
                 end_index = min((batch_num + 1) * self.batch_size, len(augmented_signals))
                 batch_X = augmented_signals[start_index: end_index]
                 batch_Y = augmented_labels[start_index: end_index]
+
+                plot.plot(batch_X[0])
+                plot.title(str(batch_Y[0]))
+                plot.savefig("/share/trna/tyCooNNTest/testfig/epoch"+str(n)+"_"+str(batch_num)+".png")
+                plot.clf()
+
                 batch_X = formatX(batch_X,self.signal_size)
                 batch_Y = formatY(batch_Y,self.class_count)
                 yield (batch_X,batch_Y)
@@ -73,13 +80,14 @@ class ArgumentlGenerator(object):
 
 class BatchIterator(object):
 
-    def __init__(self,x, y, batch_size,signal_size,class_count):
+    def __init__(self,x, y, batch_size,signal_size,class_count,epoch):
 
         self.x = np.array(x,np.float32)
         self.y = y
         self.batch_size = batch_size
         self.signal_size = signal_size
         self.class_count = class_count
+        self.epoch = epoch
 
 
     def numbatch(self):
@@ -87,12 +95,13 @@ class BatchIterator(object):
 
     def flow(self):
 
-        num_batches_per_epoch = self.numbatch()
-        for batch_num in range(num_batches_per_epoch):
-            start_index = batch_num * self.batch_size
-            end_index = min((batch_num + 1) * self.batch_size, len(self.x))
-            batch_X = self.x[start_index: end_index]
-            batch_Y = self.y[start_index: end_index]
-            batch_X = formatX(batch_X,self.signal_size)
-            batch_Y = formatY(batch_Y,self.class_count)
-            yield (batch_X,batch_Y)
+        for n in range(self.epoch):
+            num_batches_per_epoch = self.numbatch()
+            for batch_num in range(num_batches_per_epoch):
+                start_index = batch_num * self.batch_size
+                end_index = min((batch_num + 1) * self.batch_size, len(self.x))
+                batch_X = self.x[start_index: end_index]
+                batch_Y = self.y[start_index: end_index]
+                batch_X = formatX(batch_X,self.signal_size)
+                batch_Y = formatY(batch_Y,self.class_count)
+                yield (batch_X,batch_Y)

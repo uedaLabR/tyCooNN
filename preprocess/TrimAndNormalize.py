@@ -284,7 +284,7 @@ def binned(trimsignal, trimlength, mode=1):
 
         med = statistics.median(trimsignal)
         diffsig = ndi.convolve(trimsignal, diff)
-        sigma = np.std(diffsig)
+        sigma = np.std(diffsig) / 10
 
         siglen = len(trimsignal)
         left = trimlength - siglen

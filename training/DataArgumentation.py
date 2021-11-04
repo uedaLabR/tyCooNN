@@ -13,6 +13,7 @@ from multiprocessing import Pool
 def augment_data(signals, labels, signal_size,augmentation_factor):
     if augmentation_factor <= 1:
         print('Not performing data augmentation')
+        signals,labels = suffle(signals,labels)
         return signals, labels
     print('start data argumentaion')
     n_cores = multiprocessing.cpu_count() // 4
@@ -40,16 +41,30 @@ def margeAndSuffle(results,signal_size):
 
     datasize = len(results)
     shuffle_indices = np.random.permutation(np.arange(datasize))
+    # print("si",shuffle_indices)
     x = np.empty([datasize, signal_size], dtype=np.float32)
     y = np.empty(datasize, dtype=int)
     augmented_signals,augmented_labels = _merge(x, y, results, shuffle_indices)
+    # print("al",augmented_labels)
     return augmented_signals,augmented_labels
+
+def suffle(signals,labels):
+
+    datasize = len(signals)
+    labels = np.array(list(labels))
+    print(labels)
+    shuffle_indices = np.random.permutation(np.arange(datasize))
+    sufflex = signals[shuffle_indices]
+    suffley = labels[shuffle_indices]
+    return sufflex,suffley
 
 def _merge(x,y,results,shuffle_indices):
 
+    idx = -1
     for i in shuffle_indices:
-        x[i] = results[i][0]
-        y[i] = results[i][1]
+        idx +=1
+        x[idx] = results[i][0]
+        y[idx] = results[i][1]
     return x,y
 
 @jit

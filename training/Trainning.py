@@ -62,13 +62,15 @@ def formatY(Y,num_classes):
    Y = np.reshape(Y, (-1, 1,))
    return keras.utils.to_categorical(Y, num_classes)
 
-# def train(dirpath,outdir,epoch = 50,data_argument = 0):
-#     with tf.device('/device:GPU:1'):
-#         _train(dirpath, outdir, epoch, data_argument)
-
 def train(dirpath,outdir,epoch = 50,data_argument = 0):
 
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+    print("Num GPUs Available: ", tf.config.experimental.list_physical_devices('GPU'))
+    #with tf.device('/GPU:1'):
+    _train(dirpath, outdir, epoch, data_argument)
+
+def _train(dirpath,outdir,epoch = 50,data_argument = 0):
+
+
     print(dirpath)
     fs = glob.glob(dirpath + "/*.pq*")
     #fs = fs[0:3] #for debug
@@ -126,7 +128,7 @@ def train(dirpath,outdir,epoch = 50,data_argument = 0):
 
 
 
-    outweight = outdir + "/learent_weight2.h5"
+    outweight = outdir + "/learent_weight.h5"
     if data_argument > 0:
         outweight = outdir + "/learent_arg_weight.h5"
     modelCheckpoint = ModelCheckpoint(filepath=outweight,
@@ -151,9 +153,11 @@ def train(dirpath,outdir,epoch = 50,data_argument = 0):
     else:
 
         signalgen = ArgumentlGenerator(X_train, Y_train, batch_size,wlen,num_classes,data_argument,epoch)
-        #batchgen = BatchIterator(X_test, Y_test, batch_size,wlen,num_classes)
-        history = model.fit(signalgen.flow(),steps_per_epoch=signalgen.numbatch(), verbose=1,epochs=epoch,
-                  shuffle=False, validation_data=(test_x, test_y),callbacks=[modelCheckpoint])
+        batchgen = BatchIterator(X_test, Y_test, batch_size,wlen,num_classes,epoch)
+        # history = model.fit(signalgen.flow(),steps_per_epoch=signalgen.numbatch(), verbose=1,epochs=epoch,
+        #           shuffle=False, validation_data=(test_x, test_y),callbacks=[modelCheckpoint])
+        history = model.fit_generator(signalgen.flow(),steps_per_epoch=signalgen.numbatch(),
+                                      validation_data=batchgen.flow(),validation_steps=batchgen.numbatch(),epochs=epoch,callbacks=[modelCheckpoint])
 
     FIG_SIZE_WIDTH = 12
     FIG_SIZE_HEIGHT = 10
