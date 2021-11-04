@@ -76,7 +76,7 @@
        -f, --fasta
 
 
-
+![image](https://user-images.githubusercontent.com/70622849/140275201-811d7f05-112e-4609-acfd-bb800f088a83.png)
     
  
 
