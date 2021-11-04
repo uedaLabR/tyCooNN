@@ -80,6 +80,7 @@
  
 ## Parameter file
 -- example of parameter file
+
    max_core: 5  #maxcore
    #for filterling
    qval_min: 4  #q-value filter  threshold 
