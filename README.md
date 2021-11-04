@@ -81,35 +81,35 @@
 ## Parameter file
 -- example of parameter file
 
-   max_core: 5  #maxcore
-   #for filterling
-   qval_min: 4  #q-value filter  threshold 
-   delta_min: 40  
-   delta_max: 65 
-   readlen_min: 50
-   readlen_max: 200
-   signallen_max: 20000
-   duratio_rate_max: 1.1
-   #for trimming by HMM
-   meantoSet: 92
-   adap1thery: 75
-   adap2thery: 125
-   #for trriming by Aligment
-   firstAdaptor: GUAUCCUCCCAGAGAGAGAGAGAGAGAGAGAGA
-   #trimlen
-   trimlen: 8192
+   max_core: 5  #maxcore　<br>
+   #for filterling　<br>
+   qval_min: 4  #q-value filter  threshold　<br> 
+   delta_min: 40 <br> 
+   delta_max: 65 <br>
+   readlen_min: 50　<br>
+   readlen_max: 200　<br>
+   signallen_max: 20000　<br>
+   duratio_rate_max: 1.1　<br>
+   #for trimming by HMM　<br>
+   meantoSet: 92　<br>
+   adap1thery: 75　<br>
+   adap2thery: 125　<br>
+   #for trriming by Aligment　<br>
+   firstAdaptor: GUAUCCUCCCAGAGAGAGAGAGAGAGAGAGAGA　<br>
+   #trimlen　<br>
+   trimlen: 8192　<br>
 
 ## fast5 output format
 
   Analysis/Basecall_1D_099/BaseCalled_template/Fast5  tRNA reference sequence will be add for each read
   
-  Analysis/Basecall_1D_099
-                    tRNA : tRNA label
-                    tRNAIndex :tRNA Index
-                    value: inference value (0-1)
-                    filterpass: filter pass
-                    filterflg: filter flg 
-                    trimSuccess: trimSuccess
+  Analysis/Basecall_1D_099　<br>
+                    tRNA : tRNA label　<br>
+                    tRNAIndex :tRNA Index　<br>
+                    value: inference value (0-1)　<br>
+                    filterpass: filter pass　<br>
+                    filterflg: filter flg <br>　
+                    trimSuccess: trimSuccess　<br>
   
   
   
