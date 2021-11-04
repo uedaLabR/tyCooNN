@@ -14,6 +14,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 import utils.tyUtils as ut
 from training.SignalGenerator import ArgumentlGenerator
 from training.SignalGenerator import BatchIterator
+import tensorflow as tf
 
 # @click.option('--inp')
 # @click.option('--out')
@@ -61,9 +62,13 @@ def formatY(Y,num_classes):
    Y = np.reshape(Y, (-1, 1,))
    return keras.utils.to_categorical(Y, num_classes)
 
+# def train(dirpath,outdir,epoch = 50,data_argument = 0):
+#     with tf.device('/device:GPU:1'):
+#         _train(dirpath, outdir, epoch, data_argument)
 
 def train(dirpath,outdir,epoch = 50,data_argument = 0):
 
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     print(dirpath)
     fs = glob.glob(dirpath + "/*.pq*")
     #fs = fs[0:3] #for debug

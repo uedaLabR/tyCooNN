@@ -24,7 +24,7 @@ def writeIOFile():
 
         basename = os.path.basename(os.path.dirname(f)).replace("ecoli_rcc_","")
         basename = basename.split("_")[1]
-        graphpath = "/share/trna/result/testcnntrex/"+basename+".pdf"
+        #graphpath = "/share/trna/result/testcnntrex/"+basename+".pdf"
         pqpath = "/share/trna/tyCooNNTest/trim12000/"+basename+".pq"
         lst = ",".join(dirlist)
         print(basename,lst,pqpath)

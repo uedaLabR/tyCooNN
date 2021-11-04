@@ -13,3 +13,4 @@ def testTrain():
     #traning.train(input, outdir, epoch,data_argument =1)
 
 testTrain()
+
