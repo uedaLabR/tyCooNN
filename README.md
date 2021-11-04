@@ -60,7 +60,10 @@
        -c, --csvout
 
 
+![image](https://user-images.githubusercontent.com/70622849/140274997-45208886-d4f7-4a21-846f-7a7ab42dd6d2.png)
+
 # 4. analysis
+
    - Inference using data of total tRNA and classify
      
     
