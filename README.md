@@ -20,35 +20,35 @@
      
     python tyCooNN.py makeparqueteach     
      
-        '-l', '--tRNAlabel'
-        '-i', '--indir'
-        '-o', '--outpq'
-        '-c', '--takeCount',default=12000
-        -p', '--paramPath',default='settings.yaml'
+        -l, --tRNAlabel
+        -i, --indir
+        -o, --outpq
+        -c, --takeCount,default=12000
+        -p, --paramPath,default='settings.yaml'
 
      or
 
     python tyCooNN.py makeparquetall
 
-        '-ls', '--listOfIOPath'
-        '-p', '--paramPath',default='settings.yaml'
+        -ls, --listOfIOPath
+        -p, --paramPath,default='settings.yaml'
               
    - 2.  train  CNN
     
     python tyCooNN.py train
         
-        '-i', '--input'
-        '-o', '--outdir'
-        '-e', '--epoch',default=50
-        '-a', '--data_argument',default=50        
+        -i, --input
+        -o, --outdir
+        -e, --epoch,default=50
+        -a, --data_argument,default=50        
 
 2. Test accuracy using isolated tRNA data sets
      
     python tyCooNN.py evaluatetest
     
-       '-i', '--input'
-       '-o', '--outdir'
-       '-c', '--csvout'
+       -i, --input
+       -o, --outdir
+       -c, --csvout
 
 
 3. Expression Analyses(Inference)
@@ -57,11 +57,11 @@
     
     python tyCooNN.py analysis   
    
-      '-p', '--paramPath',default='settings.yaml'
-      '-i', '--indir'
-      '-c', '--configdir'
-      '-o', '--outpath'
-      '-f', '--fasta'
+      -p, --paramPath,default='settings.yaml'
+      -i, --indir
+      -c, --configdir
+      -o, --outpath
+      -f, --fasta
 
 
 
