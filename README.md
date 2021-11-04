@@ -2,10 +2,23 @@
 
 # tRNA expression Analesis using 1D-CNN
 
+
+  Usage: tyCooNN.py [OPTIONS] COMMAND [ARGS]...
+
+   Options:
+     --help  Show this message and exit.
+   
+   Commands:
+     analysis
+     evaluatetest
+     makeparquetall
+     makeparqueteach
+     train
+
 1. Train with isolated tRNA data
    - 1 . Read fast5, format(trimmed) and convert it to parquet file
      
-      python tyCooNN.py makeparqueteach     
+    python tyCooNN.py makeparqueteach     
      
         '-l', '--tRNAlabel'
         '-i', '--indir'
@@ -13,9 +26,9 @@
         '-c', '--takeCount',default=12000
         -p', '--paramPath',default='settings.yaml'
 
-or
+     or
 
-      python tyCooNN.py makeparquetall
+    python tyCooNN.py makeparquetall
 
         '-ls', '--listOfIOPath'
         '-p', '--paramPath',default='settings.yaml'
@@ -30,7 +43,7 @@ or
         '-a', '--data_argument',default=50        
 
 2. Test accuracy using isolated tRNA data sets
-      
+     
     python tyCooNN.py evaluatetest
     
        '-i', '--input'
@@ -42,7 +55,7 @@ or
    
    - Inference using data of total tRNA
     
-   python tyCooNN.py analysis   
+    python tyCooNN.py analysis   
    
       '-p', '--paramPath',default='settings.yaml'
       '-i', '--indir'
@@ -51,19 +64,7 @@ or
       '-f', '--fasta'
 
 
-# Command
 
-  Usage: tyCooNN.py [OPTIONS] COMMAND [ARGS]...
-
-   Options:
-     --help  Show this message and exit.
-   
-   Commands:
-     analysis
-     evaluatetest
-     makeparquetall
-     makeparqueteach
-     train
     
 
 
