@@ -19,7 +19,7 @@
      train
 
 1.　Prepare training dataset for each tRNA
-   - 1 . Read fast5, format(trimmed) and convert it to parquet file
+   - Read fast5, format(trimmed) and convert it to parquet file
      
     python tyCooNN.py makeparqueteach     
      
@@ -37,7 +37,8 @@
         -p, --paramPath,default='settings.yaml'
               
 2. train  CNN
-    
+  - train CNN model using isolated tRNA data sets and save weight
+     
     python tyCooNN.py train
         
         -i, --input
@@ -46,6 +47,7 @@
         -a, --data_argument,default=50        
 
 3. Test accuracy using isolated tRNA data sets
+  - test accuracy of model using isolated tRNA data sets
      
     python tyCooNN.py evaluatetest
     
@@ -55,8 +57,8 @@
 
 
 4. Expression Analyses(Inference)
-   
-   - Inference using data of total tRNA
+   - Inference using data of total tRNA and classify
+     
     
     python tyCooNN.py analysis   
    
