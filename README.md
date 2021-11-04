@@ -101,15 +101,16 @@
 
 ## fast5 output format
 
-  Analysis/Basecall_1D_099/BaseCalled_template/Fast5  tRNA reference sequence will be add for each read
+  Analysis/Basecall_1D_099/BaseCalled_template/Fast5 ： tRNA reference sequence will be add for each read
   
   Analysis/Basecall_1D_099　<br>
-                    tRNA : tRNA label　<br>
-                    tRNAIndex :tRNA Index　<br>
-                    value: inference value (0-1)　<br>
-                    filterpass: filter pass　<br>
-                    filterflg: filter flg <br>　
-                    trimSuccess: trimSuccess　<br>
+  
+            tRNA : tRNA label　<br>
+            tRNAIndex :tRNA Index　<br>
+            value: inference value (0-1)　<br>
+            filterpass: filter pass　<br>
+            filterflg: filter flg <br>
+            trimSuccess: trimSuccess　<br>
   
   
   
