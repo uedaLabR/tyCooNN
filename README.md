@@ -18,7 +18,7 @@
      makeparqueteach
      train
 
-1. Train with isolated tRNA data
+1.　Prepare training dataset for each tRNA
    - 1 . Read fast5, format(trimmed) and convert it to parquet file
      
     python tyCooNN.py makeparqueteach     
@@ -36,7 +36,7 @@
         -ls, --listOfIOPath
         -p, --paramPath,default='settings.yaml'
               
-   - 2.  train  CNN
+2. train  CNN
     
     python tyCooNN.py train
         
@@ -45,7 +45,7 @@
         -e, --epoch,default=50
         -a, --data_argument,default=50        
 
-2. Test accuracy using isolated tRNA data sets
+3. Test accuracy using isolated tRNA data sets
      
     python tyCooNN.py evaluatetest
     
@@ -54,7 +54,7 @@
        -c, --csvout
 
 
-3. Expression Analyses(Inference)
+4. Expression Analyses(Inference)
    
    - Inference using data of total tRNA
     
