@@ -103,7 +103,7 @@
 
   Analysis/Basecall_1D_099/BaseCalled_template/Fast5 ： tRNA reference sequence will be add for each read
   
-  Analysis/Basecall_1D_099　<br>
+  Analysis/Basecall_1D_099　:following data will be add as a attribute to the group <br>
   
             tRNA : tRNA label　
             tRNAIndex :tRNA Index　
