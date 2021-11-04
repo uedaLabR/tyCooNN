@@ -99,3 +99,18 @@
    #trimlen
    trimlen: 8192
 
+## fast5 output format
+
+  Analysis/Basecall_1D_099/BaseCalled_template/Fast5  tRNA reference sequence will be add for each read
+  
+  Analysis/Basecall_1D_099
+                    tRNA : tRNA label
+                    tRNAIndex :tRNA Index
+                    value: inference value (0-1)
+                    filterpass: filter pass
+                    filterflg: filter flg 
+                    trimSuccess: trimSuccess
+  
+  
+  
+
