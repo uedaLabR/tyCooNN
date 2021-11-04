@@ -2,6 +2,7 @@
 
 # tRNA expression Analesis using 1D-CNN
 
+# Commands
 
   Usage: tyCooNN.py [OPTIONS] COMMAND [ARGS]...
 
