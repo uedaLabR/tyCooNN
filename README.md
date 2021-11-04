@@ -18,7 +18,7 @@
      makeparqueteach
      train
 
-1.　makeparquet
+# 1.　makeparquet
   - Prepare training dataset for each tRNA,Read fast5, format(trimmed) and convert it to parquet file
      
     python tyCooNN.py makeparqueteach     
@@ -38,7 +38,7 @@
 
 ![image](https://user-images.githubusercontent.com/70622849/140273121-1d7312ee-d1e9-4891-aa3d-dc2a4a86853d.png)
 
-2. train 
+# 2. train 
   - train CNN model using isolated tRNA data sets and save weight
      
     python tyCooNN.py train
@@ -48,7 +48,7 @@
         -e, --epoch,default=50
         -a, --data_argument,default=50        
 
-3. evaluatetest
+# 3. evaluatetest
   - test accuracy of model using isolated tRNA data sets
      
     python tyCooNN.py evaluatetest
@@ -58,7 +58,7 @@
        -c, --csvout
 
 
-4. analysis
+# 4. analysis
    - Inference using data of total tRNA and classify
      
     
