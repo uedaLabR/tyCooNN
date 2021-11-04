@@ -1,4 +1,4 @@
-max_core: 5
+max_core: 8
 #for filterling
 qval_min: 4
 delta_min: 40

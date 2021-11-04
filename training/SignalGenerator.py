@@ -54,7 +54,7 @@ class ArgumentlGenerator(object):
 
     def flow(self):
 
-        for n in range(self.epoch):
+        for n in range(self.epoch+1):
             augmented_signals, augmented_labels \
                 = da.augment_data(self.x, self.y,self.signal_size, self.augmentation_factor)
             #augmented_signals, augmented_labels = shuffle_samples(augmented_signals, augmented_labels)
@@ -95,7 +95,7 @@ class BatchIterator(object):
 
     def flow(self):
 
-        for n in range(self.epoch):
+        for n in range(self.epoch+1):
             num_batches_per_epoch = self.numbatch()
             for batch_num in range(num_batches_per_epoch):
                 start_index = batch_num * self.batch_size
