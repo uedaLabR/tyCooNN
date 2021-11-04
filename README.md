@@ -78,5 +78,23 @@
 ![image](https://user-images.githubusercontent.com/70622849/140275201-811d7f05-112e-4609-acfd-bb800f088a83.png)
     
  
-
+## Parameter file
+-- example of parameter file
+   max_core: 5  #maxcore
+   #for filterling
+   qval_min: 4  #q-value filter  threshold 
+   delta_min: 40  
+   delta_max: 65 
+   readlen_min: 50
+   readlen_max: 200
+   signallen_max: 20000
+   duratio_rate_max: 1.1
+   #for trimming by HMM
+   meantoSet: 92
+   adap1thery: 75
+   adap2thery: 125
+   #for trriming by Aligment
+   firstAdaptor: GUAUCCUCCCAGAGAGAGAGAGAGAGAGAGAGA
+   #trimlen
+   trimlen: 8192
 
