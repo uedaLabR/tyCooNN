@@ -1,6 +1,6 @@
 # tyCooNN
 
- About : tRNA expression Analesis using 1D-CNN
+ About : tRNA expression Analysis using 1D-CNN
 
 
 ## Commands
