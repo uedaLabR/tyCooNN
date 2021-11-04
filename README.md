@@ -57,11 +57,11 @@
     
     python tyCooNN.py analysis   
    
-      -p, --paramPath,default='settings.yaml'
-      -i, --indir
-      -c, --configdir
-      -o, --outpath
-      -f, --fasta
+       -p, --paramPath,default='settings.yaml'
+       -i, --indir
+       -c, --configdir
+       -o, --outpath
+       -f, --fasta
 
 
 
