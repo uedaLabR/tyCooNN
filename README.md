@@ -19,7 +19,7 @@
      train
 
 1.　Prepare training dataset for each tRNA
-   - Read fast5, format(trimmed) and convert it to parquet file
+  - Read fast5, format(trimmed) and convert it to parquet file
      
     python tyCooNN.py makeparqueteach     
      
