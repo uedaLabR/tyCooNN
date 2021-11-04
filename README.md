@@ -48,6 +48,8 @@
         -e, --epoch,default=50
         -a, --data_argument,default=50        
 
+![image](https://user-images.githubusercontent.com/70622849/140274886-1758e556-b769-4088-b1be-a6ff77659b8f.png)
+
 # 3. evaluatetest
   - test accuracy of model using isolated tRNA data sets
      
