@@ -67,10 +67,10 @@ class ArgumentlGenerator(object):
                 batch_X = augmented_signals[start_index: end_index]
                 batch_Y = augmented_labels[start_index: end_index]
 
-                plot.plot(batch_X[0])
-                plot.title(str(batch_Y[0]))
-                plot.savefig("/share/trna/tyCooNNTest/testfig/epoch"+str(n)+"_"+str(batch_num)+".png")
-                plot.clf()
+                # plot.plot(batch_X[0])
+                # plot.title(str(batch_Y[0]))
+                # plot.savefig("/share/trna/tyCooNNTest/testfig/epoch"+str(n)+"_"+str(batch_num)+".png")
+                # plot.clf()
 
                 batch_X = formatX(batch_X,self.signal_size)
                 batch_Y = formatY(batch_Y,self.class_count)

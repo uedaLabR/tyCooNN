@@ -58,11 +58,11 @@ def suffle(signals,labels):
     suffley = labels[shuffle_indices]
     return sufflex,suffley
 
+#@jit(nopython=True)
 def _merge(x,y,results,shuffle_indices):
 
-    idx = -1
-    for i in shuffle_indices:
-        idx +=1
+    for idx in range(len(shuffle_indices)):
+        i = shuffle_indices[idx]
         x[idx] = results[i][0]
         y[idx] = results[i][1]
     return x,y
