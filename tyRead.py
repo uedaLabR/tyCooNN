@@ -19,7 +19,7 @@ class Read():
         self.fastq = fastq
 
         fastq_list = self.fastq.split('\n')
-        self.sequence = fastq_list[1].replace('T', 'U')
+        self.sequence = fastq_list[1].replace('U', 'T')
         self.qscore = np.array([ascii_score_dict[symbol] for symbol in fastq_list[3]], dtype=np.int16)
         self.mean_qscore = sum(self.qscore) / len(self.qscore)
 

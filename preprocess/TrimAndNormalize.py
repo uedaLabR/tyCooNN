@@ -133,6 +133,7 @@ def get_start_and_end_index(query_sequence,ref_sequence,query_length,ref_length)
 def applySeq(ref, read):
 
     fasta = read.sequence[::-1] # to from 3P
+    ref = ref.replace('U','T')[::-1] #
     hang = 5
     fasta = fasta[0:len(ref) + hang]
     match,mismatch,indel,extension = 16, -12, -30, -15
@@ -142,9 +143,9 @@ def applySeq(ref, read):
     r_st, r_en, q_st, q_en = get_start_and_end_index(query_sequence, ref_sequence, len(fasta),
                                                      len(ref))
     moveform3p = read.move[::-1] # to from 3P
-    return getBond(moveform3p, q_en)
+    return getBound(moveform3p, q_en)
 
-def getBond(moveform3p, q_en):
+def getBound(moveform3p, q_en):
 
     cnt = 0
     nucidx = 0

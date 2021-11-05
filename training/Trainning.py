@@ -121,7 +121,10 @@ def _train(dirpath,outdir,epoch = 50,data_argument = 0):
     #model = wavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
     model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
     model.summary()
-    optim = keras.optimizers.Adam(learning_rate=0.0008, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+    lr = 0.0008
+    if data_argument > 0:
+        lr = 0.0003
+    optim = keras.optimizers.Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
     model.compile(loss='categorical_crossentropy', optimizer=optim, metrics=['accuracy'])
     batch_size = 256
 
@@ -130,7 +133,11 @@ def _train(dirpath,outdir,epoch = 50,data_argument = 0):
 
     outweight = outdir + "/learent_weight.h5"
     if data_argument > 0:
+        # do training without data argumentation 50 epoch
+        # then data argumentation with smaller learning rate
+        model.load_weights(outweight)
         outweight = outdir + "/learent_arg_weight.h5"
+
     modelCheckpoint = ModelCheckpoint(filepath=outweight,
                                       monitor='val_accuracy',
                                       verbose=1,
@@ -138,6 +145,9 @@ def _train(dirpath,outdir,epoch = 50,data_argument = 0):
                                       save_weights_only=True,
                                       mode='max',
                                       period=1)
+
+
+
 
     test_x = formatX(X_test, wlen)
     test_y = formatY(Y_test, num_classes)

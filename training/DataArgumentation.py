@@ -9,14 +9,13 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 import utils.tyUtils as ut
 from multiprocessing import Pool
 
-
 def augment_data(signals, labels, signal_size,augmentation_factor):
     if augmentation_factor <= 1:
         print('Not performing data augmentation')
         signals,labels = suffle(signals,labels)
         return signals, labels
     print('start data argumentaion')
-    n_cores = multiprocessing.cpu_count() // 4
+    n_cores = multiprocessing.cpu_count() // 5
     print('n_cores', n_cores)
     pool = Pool(n_cores)
     o_results = []
@@ -35,6 +34,8 @@ def augment_data(signals, labels, signal_size,augmentation_factor):
     augmented_signals, augmented_labels = margeAndSuffle(results,signal_size)
     print('end data merge')
     return augmented_signals, augmented_labels
+
+
 
 #@jit(nopython=True)
 def margeAndSuffle(results,signal_size):
@@ -67,17 +68,16 @@ def _merge(x,y,results,shuffle_indices):
         y[idx] = results[i][1]
     return x,y
 
+
 @jit
 def modify_signal_l(signal, label):
     sig = modify_signal(signal)
-    # if j % 1000 == 0:
-    #     print('.', end='', flush=True)
     return (sig, label)
 
 @jit(nopython=True)
 def modify_signal(signal):
 
-    modification_count = len(signal) * 0.5
+    modification_count = len(signal) * 0.3
     modification_count = int(round(modification_count / 2)) * 2 # to int
     #modification_positions = random.sample(range(len(signal)), k=modification_count)
     modification_positions = np.random.choice(len(signal),modification_count)
