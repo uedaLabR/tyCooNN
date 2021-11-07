@@ -15,6 +15,7 @@ import utils.tyUtils as ut
 from training.SignalGenerator import ArgumentlGenerator
 from training.SignalGenerator import BatchIterator
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 # @click.option('--inp')
 # @click.option('--out')
@@ -117,26 +118,36 @@ def _train(dirpath,outdir,epoch = 50,data_argument = 0):
     num_classes = np.unique(Y_train).size
     #
 
+    if data_argument == 0:
 
-    #model = wavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-    model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-    model.summary()
-    lr = 0.0008
+        lr = 0.0008
+        model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
+        optim = keras.optimizers.Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+        batch_size = 256
+
     if data_argument > 0:
-        lr = 0.0003
-    optim = keras.optimizers.Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-    model.compile(loss='categorical_crossentropy', optimizer=optim, metrics=['accuracy'])
-    batch_size = 256
+        lr = 0.00001
+        model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes,do_r =0.1)
+        optim = keras.optimizers.Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                      amsgrad=False)
+        optim = tfa.optimizers.SWA(optim)
+        batch_size = 128
 
+    model.summary()
+    model.compile(loss='categorical_crossentropy', optimizer=optim, metrics=['accuracy'])
 
 
 
     outweight = outdir + "/learent_weight.h5"
+    historypath = outdir + '/history.csv'
+    graphpath = outdir + "/learent_graph.png"
     if data_argument > 0:
         # do training without data argumentation 50 epoch
         # then data argumentation with smaller learning rate
         model.load_weights(outweight)
         outweight = outdir + "/learent_arg_weight.h5"
+        historypath = outdir + '/history_arg.csv'
+        graphpath = outdir + "/learent_arg_graph.png"
 
     modelCheckpoint = ModelCheckpoint(filepath=outweight,
                                       monitor='val_accuracy',
@@ -180,11 +191,10 @@ def _train(dirpath,outdir,epoch = 50,data_argument = 0):
         writer.writerows(trnas)
 
     hist_df = pd.DataFrame(history.history)
-    historypath = outdir + '/history.csv'
     hist_df.to_csv(historypath)
 
     ut.plot_history(history,
-                 save_graph_img_path=outdir + "/learent_graph.png",
+                 save_graph_img_path=graphpath,
                  fig_size_width=FIG_SIZE_WIDTH,
                  fig_size_height=FIG_SIZE_HEIGHT,
                  lim_font_size=FIG_FONT_SIZE)

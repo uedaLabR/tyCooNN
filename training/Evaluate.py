@@ -96,7 +96,7 @@ def evaluate(dirpath,outdir,csvout):
 
     #model = wavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
     model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-    outweight = outdir + "/learent_weight.h5"
+    outweight = outdir + "/learent_arg_weight.h5"
     model.load_weights(outweight)
     #
 

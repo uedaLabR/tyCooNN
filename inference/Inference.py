@@ -37,7 +37,7 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta):
     print("trna",trnas)
 
     model = cnnwavenet.build_network(shape=(None, param.trimlen, 1), num_classes=len(trnas))
-    outweight = outdir + "/learent_weight.h5"
+    outweight = outdir + "/learent_arg_weight.h5"
     model.load_weights(outweight)
 
     totalcounter = Counter(trnas)

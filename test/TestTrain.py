@@ -8,8 +8,9 @@ def testTrain():
 
     input = "/share/trna/tyCooNNTest/trim12000/"
     outdir = "/share/trna/tyCooNNTest/testout"
-    epoch = 50
+    epoch = 100
     #traning.train(input, outdir, epoch)
+    epoch = 10
     traning.train(input, outdir, epoch,data_argument =3)
 
 testTrain()

@@ -73,7 +73,7 @@ def WaveNetResidualConv1D(num_filters, kernel_size, stacked_layer):
 
 
 
-def build_network(shape, num_classes):
+def build_network(shape, num_classes,do_r = 0.2):
 
     def ljuxt(*fs):
         return rcompose(juxt(*fs), list)
@@ -123,8 +123,7 @@ def build_network(shape, num_classes):
 
     num_filters_ = 16
     kernel_size_ = 3
-    LR = 0.0001
-    do_r = 0.2
+
     stacked_layers_ = [12, 8, 4, 1]
     l_input = Input(batch_shape=shape)
 
