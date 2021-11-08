@@ -23,6 +23,7 @@ class tyParam():
         self.firstAdaptor = param['firstAdaptor']
         self.trimlen = param['trimlen']
 
+
 def get_number_of_core(MAX_CORE:int):
     ncore = multiprocessing.cpu_count()
     if ncore > MAX_CORE:

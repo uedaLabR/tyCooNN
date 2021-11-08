@@ -10,7 +10,7 @@ from numba import jit
 import multiprocessing
 import csv
 import numpy as np
-
+import os
 
 
 def prepare_data(df_inp,trnas):
@@ -84,19 +84,18 @@ def evaluate(dirpath,outdir,csvout):
 
     num_classes = np.unique(Y_train).size
     #
-    train_x = np.reshape(X_train, (-1, wlen, 1))
-    test_x = np.reshape(X_test, (-1, wlen, 1))
 
-    train_y = np.reshape(Y_train, (-1, 1,))
-    test_y = np.reshape(Y_test, (-1, 1,))
+    test_x = np.reshape(X_test, (-1, wlen, 1))
     testy_noncategorical = Y_test
 
-    train_y = keras.utils.to_categorical(train_y, num_classes)
-    test_y = keras.utils.to_categorical(test_y, num_classes)
 
     #model = wavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
     model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-    outweight = outdir + "/learent_arg_weight.h5"
+
+    outweight = outdir + "learent_arg_weight.h5"
+    if not os.path.exsist():
+        outweight = outdir + "/learent_arg_weight.h5"
+
     model.load_weights(outweight)
     #
 

@@ -63,14 +63,8 @@ def formatY(Y,num_classes):
    Y = np.reshape(Y, (-1, 1,))
    return keras.utils.to_categorical(Y, num_classes)
 
+
 def train(dirpath,outdir,epoch = 50,data_argument = 0):
-
-    print("Num GPUs Available: ", tf.config.experimental.list_physical_devices('GPU'))
-    #with tf.device('/GPU:1'):
-    _train(dirpath, outdir, epoch, data_argument)
-
-def _train(dirpath,outdir,epoch = 50,data_argument = 0):
-
 
     print(dirpath)
     fs = glob.glob(dirpath + "/*.pq*")
@@ -135,7 +129,6 @@ def _train(dirpath,outdir,epoch = 50,data_argument = 0):
 
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optim, metrics=['accuracy'])
-
 
 
     outweight = outdir + "/learent_weight.h5"

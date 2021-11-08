@@ -35,9 +35,9 @@ def makeParquetAll(listOfIOPath,paramPath):
 @click.option('-o', '--outdir')
 @click.option('-e', '--epoch',default=50)
 @click.option('-a', '--data_argument',default=50)
-def train(input, outdir, epoch,data_argument):
+def train(input, outdir,  epoch,data_argument):
 
-    traning.train(input, outdir, epoch)
+    traning.train(input, outdir, epoch,data_argument)
 
 
 @cmd.command()
