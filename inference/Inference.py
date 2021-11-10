@@ -131,10 +131,11 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file):
         counter.inc(minicnt)
 
     singlefast5dir = outpath + "/single_fast5"
+    fqpath = outpath + "/trna.fastq"
     #output fast5
     if fasta5out != "None":
         single5out = "S" in fasta5out
-        copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file)
+        copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file,fqpath)
 
     return counter
 
@@ -158,7 +159,7 @@ def getFastq(read_id,seqdict,tRNA,seqlen):
         start = 0
     #seq = seq[start:len(seq)]
     qual = getDummyQual(len(seq))
-    fq = str(read_id)+ " \n"  + seq +"\n" +"+" + "\n" + str(qual)
+    fq = str(read_id)+ " \n"  + str(seq) +"\n" +"+" + "\n" + str(qual)
     #print(fq)
     return fq
 
@@ -177,12 +178,14 @@ if sys.version_info[0] > 2:
 
 
 import time
-def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt):
+def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt,fqpath):
 
 
 
     #copy first
     shutil.copyfile(f5file, fast5out)
+
+    fq = open(fqpath, mode='w')
     with MultiFast5File(fast5out, 'a') as multi_f5:
         rcnt = -1
         for read in multi_f5.get_reads():
@@ -202,10 +205,14 @@ def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,c
             if read.read_id in datadict:
 
                 minicnt = datadict[read.read_id]
-                fstline = fastq.split("\n")[0],
+                fstline = fastq.split("\n")[0]
                 fastqadd = getFastq(fstline,seqdict, minicnt.tRNA, seqlen)
 
                 if fastqadd is not None:
+
+                    fq.write(fastqadd)
+                    fq.write("\n")
+
                     attrs = {
                         "tRNA": minicnt.tRNA,
                         "tRNAIndex": minicnt.tRNAIdx,
@@ -225,6 +232,7 @@ def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,c
 
 
     multi_f5.close()
+    fq.close()
 
     if single5out:
         print('print single5 output to',singlefast5dir,str(cnt+1))
