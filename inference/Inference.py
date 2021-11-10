@@ -51,7 +51,6 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     fq = open(fqpath, mode='w')
-
     for f5file in f5list:
         counter = evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt,fq)
         totalcounter.sumup(counter)
@@ -237,7 +236,7 @@ def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,c
 
 
     multi_f5.close()
-    fq.close()
+
 
     if single5out:
         print('print single5 output to',singlefast5dir,str(cnt+1))
