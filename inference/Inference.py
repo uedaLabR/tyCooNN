@@ -47,12 +47,18 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
 
     totalcounter = Counter(trnas)
     cnt = 0
+    fqpath = outpath + "/trna.fastq"
+    if not os.path.isdir(outpath):
+        os.makedirs(outpath)
+    fq = open(fqpath, mode='w')
+
     for f5file in f5list:
-        counter = evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt)
+        counter = evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt,fq)
         totalcounter.sumup(counter)
         cnt +=1
         print("doing..{}/{}".format(cnt,len(f5list)))
 
+    fq.close()
 
     #output result
     csvout = outpath + "/count.csv"
@@ -80,7 +86,7 @@ def fastaToDict(fasta):
     return seqdict
 
 # do it file by file
-def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file):
+def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
 
     reads = ut.get_fast5_reads_from_file(f5file)
     trimmed_filterFlgged_read = tn.trimAdaptor(reads, param)
@@ -100,7 +106,7 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file):
 
         datadict[read.read_id] = MiniCounter(read.filterFlg,read.trimSuccess)
         #print(read.read_id)
-        if read.trimSuccess:
+        if (read.filterFlg == 0):
             datalabel.append(read.read_id)
             data.append(read.formatSignal)
 
@@ -131,11 +137,11 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file):
         counter.inc(minicnt)
 
     singlefast5dir = outpath + "/single_fast5"
-    fqpath = outpath + "/trna.fastq"
+
     #output fast5
     if fasta5out != "None":
         single5out = "S" in fasta5out
-        copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file,fqpath)
+        copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file,fq)
 
     return counter
 
@@ -178,14 +184,13 @@ if sys.version_info[0] > 2:
 
 
 import time
-def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt,fqpath):
+def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt,fq):
 
 
 
     #copy first
     shutil.copyfile(f5file, fast5out)
 
-    fq = open(fqpath, mode='w')
     with MultiFast5File(fast5out, 'a') as multi_f5:
         rcnt = -1
         for read in multi_f5.get_reads():
