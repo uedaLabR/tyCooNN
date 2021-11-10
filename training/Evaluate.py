@@ -10,7 +10,7 @@ from numba import jit
 import multiprocessing
 import csv
 import numpy as np
-import os
+import os.path as path
 
 
 def prepare_data(df_inp,trnas):
@@ -93,7 +93,7 @@ def evaluate(dirpath,outdir,csvout):
     model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
 
     outweight = outdir + "learent_arg_weight.h5"
-    if not os.path.exsist():
+    if not path.isfile(outweight):
         outweight = outdir + "/learent_arg_weight.h5"
 
     model.load_weights(outweight)

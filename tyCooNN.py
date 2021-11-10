@@ -55,9 +55,10 @@ def evaluateTest(input, outdir, csvout):
 @click.option('-c', '--configdir')
 @click.option('-o', '--outpath')
 @click.option('-f', '--fasta')
-def analysis(paramPath,indirs,configdir,outpath,fasta):
+@click.option('-f5', '--fasta5out',required=False,default="m")
+def analysis(paramPath,indirs,configdir,outpath,fasta,fasta5out):
 
-    inference.evaluate(paramPath,indirs,configdir,outpath,fasta)
+    inference.evaluate(paramPath,indirs,configdir,outpath,fasta,fasta5out)
 
 
 if __name__ == '__main__':

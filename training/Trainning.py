@@ -108,7 +108,6 @@ def train(dirpath,outdir,epoch = 50,data_argument = 0):
     # name to index
     Y_train = list(map(lambda trna: trnas.index(trna), Y_train))
     Y_test = list(map(lambda trna: trnas.index(trna), Y_test))
-
     num_classes = np.unique(Y_train).size
     #
 

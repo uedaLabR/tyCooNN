@@ -12,6 +12,7 @@ from inference.ExCounter import Counter
 from inference.ExCounter import MiniCounter
 import preprocess.TrimAndNormalize as tn
 
+
 def getTRNAlist(trnapath):
 
     trnas = []
@@ -24,7 +25,12 @@ def getTRNAlist(trnapath):
                 trnas.append(trna)
     return trnas
 
-def evaluate(paramPath,indirs,outdir,outpath,fasta):
+import os.path
+def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
+
+    outweight = outdir + "learent_arg_weight.h5"
+    if not os.path.isfile(outweight):
+        outweight = outdir + "/learent_arg_weight.h5"
 
     param = ut.get_parameter(paramPath)
     indirs = indirs.split(",")
@@ -37,15 +43,12 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta):
     print("trna",trnas)
 
     model = cnnwavenet.build_network(shape=(None, param.trimlen, 1), num_classes=len(trnas))
-    outweight = outdir + "learent_arg_weight.h5"
-    if not os.path.exsist():
-        outweight = outdir + "/learent_arg_weight.h5"
     model.load_weights(outweight)
 
     totalcounter = Counter(trnas)
     cnt = 0
     for f5file in f5list:
-        counter = evaluateEach(param,f5file,outpath,model,trnas,fasta)
+        counter = evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt)
         totalcounter.sumup(counter)
         cnt +=1
         print("doing..{}/{}".format(cnt,len(f5list)))
@@ -77,7 +80,7 @@ def fastaToDict(fasta):
     return seqdict
 
 # do it file by file
-def evaluateEach(param,f5file,outpath,model,trnas,fasta):
+def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file):
 
     reads = ut.get_fast5_reads_from_file(f5file)
     trimmed_filterFlgged_read = tn.trimAdaptor(reads, param)
@@ -96,9 +99,12 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta):
     for read in format_reads:
 
         datadict[read.read_id] = MiniCounter(read.filterFlg,read.trimSuccess)
+        #print(read.read_id)
         if read.trimSuccess:
             datalabel.append(read.read_id)
             data.append(read.formatSignal)
+
+    print(len(datalabel))
 
     data = np.reshape(data, (-1, param.trimlen, 1))
     prediction = model.predict(data, batch_size=None, verbose=0, steps=None)
@@ -116,7 +122,6 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta):
         maxtrna = trnas[maxidx]
         readid = datalabel[cnt]
         minicnt =  datadict[readid]
-
         minicnt.addInference(maxtrna,maxidx,maxv)
 
     #
@@ -125,8 +130,11 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta):
         minicnt = datadict[key]
         counter.inc(minicnt)
 
+    singlefast5dir = outpath + "/single_fast5"
     #output fast5
-    copyWithAdddata(f5file,fast5out,datadict,seqdict)
+    if fasta5out != "None":
+        single5out = "S" in fasta5out
+        copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file)
 
     return counter
 
@@ -136,6 +144,10 @@ def getDummyQual(seqlen):
 
 def getFastq(read_id,seqdict,tRNA,seqlen):
 
+    if tRNA not in seqdict:
+        #print(tRNA)
+        return None
+
     seq = seqdict[tRNA]
     if len(seq) <= seqlen:
         seqlen = len(seq)
@@ -144,9 +156,11 @@ def getFastq(read_id,seqdict,tRNA,seqlen):
     start = (len(seq)-seqlen)-hang
     if start < 0:
         start = 0
-    seq = seq[start:len(seq)]
-    qual = getDummyQual(seqlen)
-    return "@" + read_id+ " \n"  + seq +"\n" +"+" + "\n" + qual
+    #seq = seq[start:len(seq)]
+    qual = getDummyQual(len(seq))
+    fq = str(read_id)+ " \n"  + seq +"\n" +"+" + "\n" + str(qual)
+    #print(fq)
+    return fq
 
 import logging
 import os
@@ -154,45 +168,64 @@ import shutil
 from ont_fast5_api.fast5_file import Fast5File, Fast5FileTypeError
 from ont_fast5_api.multi_fast5 import MultiFast5File
 from ont_fast5_api.compression_settings import GZIP
-def copyWithAdddata(f5file,fast5out,datadict,seqdict):
+import ont_fast5_api.conversion_tools.multi_to_single_fast5 as multi_to_single_fast5
+import h5py
+import sys
+if sys.version_info[0] > 2:
+    unicode = str
 
-    try:
-        #copy first
-        shutil.copyfile(f5file, fast5out)
-        with MultiFast5File(fast5out, 'a') as multi_f5:
-            for read in multi_f5.get_reads():
 
-                component = "basecall_1d"
-                group_name = "Basecall_1D_099"
-                dataset_name ="BaseCalled_template"
 
-                basecall_run = read.get_latest_analysis("Basecall_1D")
-                fastq = read.get_analysis_dataset(basecall_run, "BaseCalled_template/Fastq")
-                seqlen = len(fastq.split("\n")[1])
+import time
+def copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt):
+
+
+
+    #copy first
+    shutil.copyfile(f5file, fast5out)
+    with MultiFast5File(fast5out, 'a') as multi_f5:
+        rcnt = -1
+        for read in multi_f5.get_reads():
+
+            rcnt += 1
+            component = "basecall_1d"
+            group_name = "Basecall_1D_099"
+            dataset_name = "BaseCalled_template"
+
+            basecall_run = read.get_latest_analysis("Basecall_1D")
+            fastq = read.get_analysis_dataset(basecall_run, "BaseCalled_template/Fastq")
+            # print(fastq)
+            seqlen = len(fastq.split("\n")[1])
+
+            #print(read.read_id, (read.read_id in datadict), rcnt)
+
+            if read.read_id in datadict:
 
                 minicnt = datadict[read.read_id]
-                fastqadd = getFastq(read.read_id,seqdict,minicnt.tRNA,seqlen)
+                fstline = fastq.split("\n")[0],
+                fastqadd = getFastq(fstline,seqdict, minicnt.tRNA, seqlen)
+
+                if fastqadd is not None:
+                    attrs = {
+                        "tRNA": minicnt.tRNA,
+                        "tRNAIndex": minicnt.tRNAIdx,
+                        "value": minicnt.maxval,
+                        "filterpass": (minicnt.filterFlg == 0),
+                        "filterflg": minicnt.filterFlg,
+                        "trimSuccess": minicnt.trimSuccess
+                    }
+                    read.add_analysis(component, group_name, attrs)
+                    path = 'Analyses/{}/'.format(group_name)
+                    read.handle[path].create_group(dataset_name)
+                    path = 'Analyses/{}/{}'.format(group_name, dataset_name)
+
+                    read.handle[path].create_dataset(
+                        'Fastq', data=str(fastqadd),
+                        dtype=h5py.special_dtype(vlen=unicode))
 
 
-                attrs = {
-                    "tRNA": minicnt.tRNA,
-                    "tRNAIndex": minicnt.tRNAIdx,
-                    "value": minicnt.maxval,
-                    "filterpass": (minicnt.filterFlg==0),
-                    "filterflg": minicnt.filterFlg,
-                    "trimSuccess": minicnt.trimSuccess
-                }
-                read.add_analysis(component, group_name, attrs)
-                path = 'Analyses/{}/'.format(group_name)
-                read.handle[path].create_group(dataset_name)
-                path = 'Analyses/{}/{}'.format(group_name,dataset_name)
-                read.handle[path].create_dataset('Fastq', data=str(fastqadd))
+    multi_f5.close()
 
-
-
-    except Fast5FileTypeError:
-        print("error")
-        pass
-    except Exception as e:
-        print("error2",e)
-        pass
+    if single5out:
+        print('print single5 output to',singlefast5dir,str(cnt+1))
+        multi_to_single_fast5.convert_multi_to_single(fast5out, singlefast5dir,str(cnt+1))
