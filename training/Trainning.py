@@ -261,6 +261,8 @@ class Trainer:
 
     def decay_schedule(self,epoch):
 
+        return self.base_lr # no decay
+
         epoch = epoch + self.total_epoch
         if epoch > 1 and epoch <= 5:
             return self.base_lr * 0.25                   # 0.0002
