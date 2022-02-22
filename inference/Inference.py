@@ -26,11 +26,10 @@ def getTRNAlist(trnapath):
     return trnas
 
 import os.path
-def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
+def evaluate(paramPath,indirs,outdir,outpath,weightFile,fasta,fasta5out):
 
-    outweight = outdir + "learent_arg_weight.h5"
-    if not os.path.isfile(outweight):
-        outweight = outdir + "/learent_arg_weight.h5"
+    #outweight = outdir + "learnt_arg_weight_1.h5"
+    outweight = outdir + "/" + weightFile
 
     param = ut.get_parameter(paramPath)
     indirs = indirs.split(",")

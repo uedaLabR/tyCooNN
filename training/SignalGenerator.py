@@ -12,8 +12,8 @@ import csv
 import numpy as np
 from tensorflow.keras.callbacks import ModelCheckpoint
 import utils.tyUtils as ut
-import training.DataArgumentation as da
-
+import training.DataAugmentation as da
+import time
 
 def shuffle_samples(X, y):
 
@@ -36,27 +36,55 @@ def formatY(Y,num_classes):
    return keras.utils.to_categorical(Y, num_classes)
 
 import matplotlib.pyplot as plot
-class ArgumentlGenerator(object):
+class AugGenerator(object):
 
-    def __init__(self,x, y, batch_size,signal_size, class_count, augmentation_factor,epoch):
+    def __init__(self,x, y, batch_size,signal_size, class_count, augmentation_factor,epoch,ncore):
 
-        self.x = np.array(x,np.float32)
-        self.y = y
+        #self.x = np.array(x,np.float32)
+        #self.y = y
+        self.x = x.reshape((x.shape[0],x.shape[1]))
+        self.y = list(np.argmax(y,axis=1))
         self.batch_size = batch_size
         self.signal_size = signal_size
         self.class_count = class_count
         self.augmentation_factor = augmentation_factor
         self.epoch = epoch
+        self.ncore = ncore
+        n = len(self.x)
+        n1 = n*self.augmentation_factor
+        nb = int(np.ceil(n1/self.batch_size))
+        print("Num Sample: %d Num Sample Aug: %d Num Batch: %d" % (n,n1,nb))
 
     def numbatch(self):
 
-        return  int((len(self.x)*self.augmentation_factor - 1) / self.batch_size) + 1
+        n = len(self.x)
+        n1 = n*self.augmentation_factor
+        return int(np.ceil(n1/self.batch_size))
+        #return  int((len(self.x)*self.augmentation_factor - 1) / self.batch_size) + 1
+
+    def numsample(self):
+
+        n = len(self.x)
+        return n*self.augmentation_factor
+
+    def get_augment_time(self):
+        time_beg = time.time()
+        print("## Dummy ##")
+        s,l = da.augment_data(self.x, self.y,self.signal_size, self.augmentation_factor,self.ncore)
+        print("## Dummy End ##")
+        time_end = np.ceil(time.time() - time_beg)
+        return time_end + 5
+
+    def _set_wait(self,t):
+        self.t = t
 
     def flow(self):
 
         for n in range(self.epoch+1):
+            time.sleep(self.t)
+            print(flush=True)
             augmented_signals, augmented_labels \
-                = da.augment_data(self.x, self.y,self.signal_size, self.augmentation_factor)
+                = da.augment_data(self.x, self.y,self.signal_size, self.augmentation_factor,self.ncore)
             #augmented_signals, augmented_labels = shuffle_samples(augmented_signals, augmented_labels)
 
 
@@ -76,13 +104,12 @@ class ArgumentlGenerator(object):
                 batch_Y = formatY(batch_Y,self.class_count)
                 yield (batch_X,batch_Y)
 
-
-
 class BatchIterator(object):
 
     def __init__(self,x, y, batch_size,signal_size,class_count,epoch):
 
-        self.x = np.array(x,np.float32)
+        #self.x = np.array(x,np.float32)
+        self.x = x
         self.y = y
         self.batch_size = batch_size
         self.signal_size = signal_size
@@ -91,7 +118,8 @@ class BatchIterator(object):
 
 
     def numbatch(self):
-        return int((len(self.x) - 1) / self.batch_size) + 1
+        n = self.x.shape[0]
+        return int((n - 1) / self.batch_size) + 1
 
     def flow(self):
 
@@ -100,8 +128,8 @@ class BatchIterator(object):
             for batch_num in range(num_batches_per_epoch):
                 start_index = batch_num * self.batch_size
                 end_index = min((batch_num + 1) * self.batch_size, len(self.x))
-                batch_X = self.x[start_index: end_index]
-                batch_Y = self.y[start_index: end_index]
-                batch_X = formatX(batch_X,self.signal_size)
-                batch_Y = formatY(batch_Y,self.class_count)
+                batch_X = self.x[start_index: end_index,:,:]
+                batch_Y = self.y[start_index: end_index,:,:]
+                #batch_X = formatX(batch_X,self.signal_size)
+                #batch_Y = formatY(batch_Y,self.class_count)
                 yield (batch_X,batch_Y)

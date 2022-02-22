@@ -149,24 +149,25 @@ def plot_history(history,
 
     # Ot\
     plt.figure(figsize=(fig_size_width, fig_size_height))
-    plt.rcParams['font.family'] = 'Times New Roman'
+    #plt.rcParams['font.family'] = 'Times New Roman'
     plt.rcParams['font.size'] = lim_font_size  # StHg
-    # plt.subplot(121)
+
+    plt.subplot(121)
 
     # plot accuracy values
-    plt.plot(epochs, acc, color="blue", linestyle="solid", label='train acc')
-    plt.plot(epochs, val_acc, color="green", linestyle="solid", label='valid acc')
-    # plt.title('Training and Validation acc')
+    plt.plot(epochs, acc, color="blue", linestyle="solid", label='train')
+    plt.plot(epochs, val_acc, color="green", linestyle="solid", label='validation')
+    plt.title('Training and Validation accuracy')
     # plt.grid()
-    # plt.legend()
+    plt.legend()
 
     # plot loss values
-    # plt.subplot(122)
-    plt.plot(epochs, loss, color="red", linestyle="solid", label='train loss')
-    plt.plot(epochs, val_loss, color="orange", linestyle="solid", label='valid loss')
-    # plt.title('Training and Validation loss')
+    plt.subplot(122)
+    plt.plot(epochs, loss, color="red", linestyle="solid", label='train')
+    plt.plot(epochs, val_loss, color="orange", linestyle="solid", label='validation')
+    plt.title('Training and Validation loss')
     plt.legend()
-    plt.grid()
+    #plt.grid()
 
     plt.savefig(save_graph_img_path)
     plt.close()  # obt@
