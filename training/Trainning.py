@@ -150,8 +150,6 @@ def train(dirpath,outdir,epoch = 50,data_argument = 0):
                                       period=1)
 
 
-
-
     test_x = formatX(X_test, wlen)
     test_y = formatY(Y_test, num_classes)
     if data_argument == 0:

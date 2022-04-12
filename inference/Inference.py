@@ -121,13 +121,13 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
         cnt += 1
         rdata = np.array(row)
         maxidxs = np.where(rdata == rdata.max())
-        maxidx = int(maxidxs[0])
-        maxv = rdata.max()
-
-        maxtrna = trnas[maxidx]
-        readid = datalabel[cnt]
-        minicnt =  datadict[readid]
-        minicnt.addInference(maxtrna,maxidx,maxv)
+        if len(maxidxs) == 1:
+            maxidx = int(maxidxs[0])
+            maxv = rdata.max()
+            maxtrna = trnas[maxidx]
+            readid = datalabel[cnt]
+            minicnt =  datadict[readid]
+            minicnt.addInference(maxtrna,maxidx,maxv)
 
     #
     counter = Counter(trnas)
