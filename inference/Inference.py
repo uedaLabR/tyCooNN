@@ -115,13 +115,15 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
     prediction = model.predict(data, batch_size=None, verbose=0, steps=None)
 
     cnt = -1
+    thres = 0.75
     for row in prediction:
 
         # incriment
         cnt += 1
         rdata = np.array(row)
         maxidxs = np.where(rdata == rdata.max())
-        if len(maxidxs) == 1:
+        #unique hit with more than 0.75 Intensity
+        if len(maxidxs) == 1 and rdata.max() > thres:
             maxidx = int(maxidxs[0])
             maxv = rdata.max()
             maxtrna = trnas[maxidx]
