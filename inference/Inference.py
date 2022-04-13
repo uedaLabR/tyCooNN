@@ -122,7 +122,7 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
         rdata = np.array(row)
         maxidxs = np.where(rdata == rdata.max())
         #unique hit with more than zero Intensity
-        if len(maxidxs) == 1 and rdata.max() > 0:
+        if len(maxidxs) == 1 and rdata.max() > 0.5:
             maxidx = int(maxidxs[0])
             maxv = rdata.max()
             maxtrna = trnas[maxidx]
