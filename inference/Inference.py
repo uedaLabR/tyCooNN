@@ -26,7 +26,7 @@ def getTRNAlist(trnapath):
     return trnas
 
 import os.path
-def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
+def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out,threshold=0.75):
 
     outweight = outdir + "learent_arg_weight.h5"
     if not os.path.isfile(outweight):
@@ -37,6 +37,8 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
     f5list = []
     for dir in indirs:
         f5list.extend(ut.get_fast5_files_in_dir(dir))
+    f5list = f5list[:1]
+    print(f5list)
 
     trnapath = outdir + '/tRNAindex.csv'
     trnas = getTRNAlist(trnapath)
@@ -45,14 +47,14 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out):
     model = cnnwavenet.build_network(shape=(None, param.trimlen, 1), num_classes=len(trnas))
     model.load_weights(outweight)
 
-    totalcounter = Counter(trnas)
+    totalcounter = Counter(trnas,threshold=threshold)
     cnt = 0
     fqpath = outpath + "/trna.fastq"
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     fq = open(fqpath, mode='w')
     for f5file in f5list:
-        counter = evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt,fq)
+        counter = evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt,fq,threshold)
         totalcounter.sumup(counter)
         cnt +=1
         print("doing..{}/{}".format(cnt,len(f5list)))
@@ -85,7 +87,7 @@ def fastaToDict(fasta):
     return seqdict
 
 # do it file by file
-def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
+def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq,threshold):
 
     reads = ut.get_fast5_reads_from_file(f5file)
     trimmed_filterFlgged_read = tn.trimAdaptor(reads, param)
@@ -103,13 +105,13 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
 
     for read in format_reads:
 
-        datadict[read.read_id] = MiniCounter(read.filterFlg,read.trimSuccess)
         #print(read.read_id)
         if (read.filterFlg == 0):
+            datadict[read.read_id] = MiniCounter(read.filterFlg,read.trimSuccess)
             datalabel.append(read.read_id)
             data.append(read.formatSignal)
 
-    print(len(datalabel))
+    print("Number of trimmed reads: ",len(datalabel))
 
     data = np.reshape(data, (-1, param.trimlen, 1))
     prediction = model.predict(data, batch_size=None, verbose=0, steps=None)
@@ -122,26 +124,25 @@ def evaluateEach(param,f5file,outpath,model,trnas,fasta,fasta5out,cnt_file,fq):
         rdata = np.array(row)
         maxidxs = np.where(rdata == rdata.max())
         #unique hit with more than zero Intensity
-        if len(maxidxs) == 1 and rdata.max() > 0:
+        if len(maxidxs) == 1 and rdata.max() >= 0:
             maxidx = int(maxidxs[0])
             maxv = rdata.max()
             maxtrna = trnas[maxidx]
             readid = datalabel[cnt]
             minicnt =  datadict[readid]
             minicnt.addInference(maxtrna,maxidx,maxv)
-
     #
-    counter = Counter(trnas)
+    counter = Counter(trnas,threshold=threshold)
     for key in datadict:
         minicnt = datadict[key]
         counter.inc(minicnt)
 
     singlefast5dir = outpath + "/single_fast5"
-
     #output fast5
     if fasta5out != "None":
-        single5out = "S" in fasta5out
-        copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file,fq)
+        if "S" == fasta5out:
+            single5out = "S"
+            copyWithAdddata(f5file,fast5out,datadict,seqdict,single5out,singlefast5dir,cnt_file,fq)
 
     return counter
 
