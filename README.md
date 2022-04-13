@@ -115,5 +115,5 @@
   
 ## Additional information while inferencing
 
-  [./]master/./README_INFERENCE  
+  [Readme about inference](./README_INFERENCE)
 
