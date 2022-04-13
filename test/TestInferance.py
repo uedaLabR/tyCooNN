@@ -1,30 +1,25 @@
 import sys
 sys.path.append("../")
-
+import yaml
 import inference.Inference as inference
 
-def testEvaluate():
+import os
 
-    #indirs = "/share/trna/testdata/210213_ecoli_WT_total_LB_BW_log_1_V7/1/20210213_1049_MN23375_FAO46570_a665fb8a/fast5/workspace"
-    #indirs = "/share/trna/testdata/210213_ecoli_WT_total_LB_BW_log_2_V7/1/20210213_1050_MN29778_FAP04280_7587a04a/fast5/workspace"
-    #indirs ="/share/trna/testdata/210213_ecoli_WT_total_LB_BW_sta_1_V7/1/20210213_0432_MN23375_FAP27902_bfc1e988/fast5/workspace"
-    #indirs = "/share/trna/testdata/201026_ecoli_SmtA_total_LB_BW_sta_V7/1/20201026_0916_MN29778_FAO47177_7299feae/fast5/workspace,/share/trna/testdata/201026_ecoli_SmtA_total_LB_BW_sta_V7/2/20201026_0927_MN29778_FAO47177_f56e19af/fast5/workspace"
-    #indirs = "/share/trna/testdata/201026_ecoli_WT_mcmo5U_total_LB_BW_sta_V7_workspace/1/20201026_0914_MN23375_FAO49608_da8b7f1c/fast5/workspace,/share/trna/testdata/201026_ecoli_WT_mcmo5U_total_LB_BW_sta_V7_workspace/2/20201026_0925_MN23375_FAO49608_c7f935e1/fast5/workspace"
-    
-    indirs = '/share/trna/testdata/210213_ecoli_WT_total_LB_BW_log_1_V7/1/20210213_1049_MN23375_FAO46570_a665fb8a/fast5/workspace'
+def testEvaluate(opts):
+    '''
+    opt entries:
+    inp_loc = "/share/trna/testdata/201026_ecoli_WT_mcmo5U_total_LB_BW_sta_V7_workspace/"
+    out_loc = "/home/bhaskar/work/tyCooNN_2202_master/data/out/WT_mcmo5U_total_LB_BW_sta"
 
-    configdir = "/home/bhaskar/work/tyCooNN_2202_master/data/out/"
-    outpath = "/home/bhaskar/work/tyCooNN_2202_master/data/out/infer/test2"
-
-    #fasta = "/share/trna/tyCooNNTest/ecolitRNA_full.fa"
-    fasta = "/share/bhaskar/tyCooNNTest/fasta/ecolitRNA_full.fa"
-
-    #paramPath = '/share/trna/tyCooNN/setting.yaml'
-    paramPath = '/home/bhaskar/work/tyCooNN_2202_master/setting.yaml'
-
+    model_loc = "/home/bhaskar/work/tyCooNN_2202_master/data/out"
+    fasta_loc = "/share/bhaskar/tyCooNNTest/fasta/ecolitRNA_full.fa"
+    param_loc = "/home/bhaskar/work/tyCooNN_2202_master/setting.yaml"
     post_filter_threshold = 0.75
+    '''
 
-    inference.evaluate(paramPath,indirs,configdir,outpath,fasta,"None",threshold=post_filter_threshold) # default threshold = 0.75
+    inference.evaluate(opts)
 
-
-testEvaluate()
+input_options = sys.argv[1]
+with open(input_options) as f:
+    opts = yaml.safe_load(f)
+    testEvaluate(opts) 

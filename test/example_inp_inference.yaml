@@ -1,0 +1,10 @@
+inp_loc: /share/trna/testdata/210213_ecoli_WT_total_LB_BW_log_1_V7
+out_loc: /home/bhaskar/work/tyCooNN_2202_master/data/out/infer/test2
+model_loc: /home/bhaskar/work/tyCooNN_2202_master/data/out
+fasta_loc: /share/bhaskar/tyCooNNTest/fasta/ecolitRNA_full.fa
+param_loc: /home/bhaskar/work/tyCooNN_2202_master/setting.yaml
+writeSingle5: False
+threshold: 0.75
+runmode: debug
+gpu: 0,1
+gpu_memory_limit: 20

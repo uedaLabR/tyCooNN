@@ -11,7 +11,7 @@ from ont_fast5_api.fast5_interface import get_fast5_file
 from inference.ExCounter import Counter
 from inference.ExCounter import MiniCounter
 import preprocess.TrimAndNormalize as tn
-
+import tensorflow as tf
 
 def getTRNAlist(trnapath):
 
@@ -26,7 +26,66 @@ def getTRNAlist(trnapath):
     return trnas
 
 import os.path
-def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out,threshold=0.75):
+#def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out,threshold=0.75,runmode='production'):
+
+def evaluate(opts):
+
+    paramPath = opts['param_loc']
+    indirs    = opts['inp_loc']
+    outdir    = opts['model_loc']
+    outpath   = opts['out_loc']
+    fasta     = opts['fasta_loc']
+    if 'writeSingle5' in opts:
+        writeSingle5 = opts['writeSingle5']
+    else:
+        writeSingle5 = False
+    if writeSingle5: 
+        fasta5out = "S"
+    else:
+        fasta5out = "None"
+    if 'threshold' in opts:
+        threshold=opts['threshold']
+    else:
+        threshold=0.75
+    if 'runmode' in opts:
+        runmode=opts['runmode']
+    
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    use_mult_gpu = False
+    use_gpu = False
+    if 'gpu' in opts:
+        gpu_select = str(opts['gpu'])
+        print("Using %s" % gpu_select)
+        os.environ["CUDA_VISIBLE_DEVICES"] = gpu_select
+        if gpu_select == '':
+            use_gpu = False
+        else:
+            use_gpu = True
+            num_gpu = len(gpu_select.split(','))
+            if num_gpu > 1:
+                use_mult_gpu = True
+    if 'gpu_memory_limit' in opts:
+        gpu_memory_limit = 1024 * opts['gpu_memory_limit']
+        gpu_logical_set = True
+        
+    else:
+        gpu_logical_set = False
+    
+    # Setting computing device
+    if use_gpu:
+        if use_mult_gpu:
+            gpus = tf.config.list_physical_devices('GPU')
+            if gpu_logical_set:
+                for gpu in gpus:
+                    tf.config.set_logical_device_configuration(gpu,[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
+                gpus = tf.config.list_logical_devices('GPU')
+            else:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+        else:
+            if gpu_logical_set:
+                gpus = tf.config.list_physical_devices('GPU')
+                tf.config.set_logical_device_configuration(gpus[0],[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
 
     outweight = outdir + "learent_arg_weight.h5"
     if not os.path.isfile(outweight):
@@ -37,15 +96,22 @@ def evaluate(paramPath,indirs,outdir,outpath,fasta,fasta5out,threshold=0.75):
     f5list = []
     for dir in indirs:
         f5list.extend(ut.get_fast5_files_in_dir(dir))
-    f5list = f5list[:1]
-    print(f5list)
+    if runmode == 'debug':
+        f5list = f5list[:1]
+        print(f5list)
 
     trnapath = outdir + '/tRNAindex.csv'
     trnas = getTRNAlist(trnapath)
     print("trna",trnas)
 
-    model = cnnwavenet.build_network(shape=(None, param.trimlen, 1), num_classes=len(trnas))
-    model.load_weights(outweight)
+    if use_mult_gpu and gpu_logical_set:
+        strategy = tf.distribute.MirroredStrategy(gpus)
+        with strategy.scope():
+            model = cnnwavenet.build_network(shape=(None, param.trimlen, 1), num_classes=len(trnas))
+            model.load_weights(outweight)
+    else:
+        model = cnnwavenet.build_network(shape=(None, param.trimlen, 1), num_classes=len(trnas))
+        model.load_weights(outweight)
 
     totalcounter = Counter(trnas,threshold=threshold)
     cnt = 0
