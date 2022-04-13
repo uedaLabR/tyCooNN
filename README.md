@@ -115,5 +115,5 @@
   
 ## Additional information while inferencing
 
-  blob/README_INFERENCE  
+  [.]README_INFERENCE  
 
