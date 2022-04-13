@@ -113,5 +113,7 @@
             trimSuccess: trimSuccess　
   
   
-  
+## Additional information while inferencing
+
+  blob/README_INFERENCE  
 
