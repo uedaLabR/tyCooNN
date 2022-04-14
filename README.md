@@ -113,7 +113,7 @@
             trimSuccess: trimSuccess　
   
   
-## Additional information while inferencing
+## Additional information
 
-  [Readme about inference](./README_INFERENCE)
+  [Readme more](./README_ADDITIONAL)
 
