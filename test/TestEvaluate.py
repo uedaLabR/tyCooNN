@@ -1,15 +1,17 @@
 import glob
 import os
-import training.GenaratePqForTrainning as pqg
 import sys
+sys.path.append("../")
+import yaml
 import training.Evaluate as evaluate
+import training.GenaratePqForTrainning as pqg
 
-def testEvaluate():
+def testEvaluate(opts):
 
-    input = "/share/trna/tyCooNNTest/trim12000/"
-    outdir = "/share/trna/tyCooNNTest/testout"
-    csvout = "/share/trna/tyCooNNTest/test.csv"
-    evaluate.evaluate(input, outdir, csvout)
+    evaluate.evaluate(opts)
 
+input_options = sys.argv[1]
+with open(input_options) as f:
+    opts = yaml.safe_load(f)
+    testEvaluate(opts)
 
-testEvaluate()

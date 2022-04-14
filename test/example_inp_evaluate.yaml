@@ -1,0 +1,8 @@
+inp_loc: /home/bhaskar/work/tyCooNN_2202_master/data/pq/
+model_loc: /home/bhaskar/work/tyCooNN_2202_master/data/out
+csvout: /home/bhaskar/work/tyCooNN_2202_master/data/out/validation_model.csv
+csvout2: /home/bhaskar/work/tyCooNN_2202_master/data/out/validation_model_filter.csv
+max_core: 8
+threshold: 0.75
+gpu: 0
+gpu_memory_limit: 20

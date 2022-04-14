@@ -1,4 +1,5 @@
 from pyarrow import parquet as pq
+from itertools import chain
 import numpy as np
 from multiprocessing import Pool
 import random
@@ -11,106 +12,176 @@ import multiprocessing
 import csv
 import numpy as np
 import os.path as path
+import os
+import tensorflow as tf
 
+def prepare_data(inp_prepare_data):
 
-def prepare_data(df_inp,trnas):
+    fid,filename = inp_prepare_data
 
-    X = []
-    Xtrace = []
-    Y = []
-
-    # pqt = pq.read_table(f,
-    #   columns=['read_id', 'trna','meanq','normdelta','countCp','trimsignal', 'trimtrace','fastq'])
-
-    for idx, row in df_inp.iterrows():
-
+    X_test = []
+    Y_test = []
+    trnas  = []
+    pqt = pq.read_table(filename,
+                        columns=['read_id', 'trna','trimsignal'])
+    print("Load %3d: %s" % (fid+1,filename))
+    dfp = pqt.to_pandas()
+    cnt = 0
+    wlen = 0
+    for idx, row in dfp.iterrows():
         trna = row[1]
-        signal = row[5]
-        trace = row[6]
+        signal = row[2]
+        if wlen ==0:
+            wlen = len(signal)
 
-        index = trnas.index(trna)
+        if not cnt % 12 >= 2:
+            X_test.append(signal)
+            Y_test.append(trna)
 
-        X.append(signal)
-        Xtrace.append(trace)
-        Y.append(index)
+        cnt+=1
 
-    X = np.array(X)
-    Y = np.array(Y)
-    return X,Xtrace,Y
+    trna = list(dfp["trna"].unique())
+    trnas.append(trna)
 
+    return {'trna': trnas, 'wlen': wlen, 'x': X_test, 'y': Y_test }
 
 
-def evaluate(dirpath,outdir,csvout):
+def evaluate(opts):
 
-    fs = glob.glob(dirpath + "/*.pq*")
+    dirpath = opts['inp_loc']
+    outdir = opts['model_loc']
+    csvout = opts['csvout']
+    csvout2 = opts['csvout2']
+
+    if 'threshold' in opts:
+        threshold=opts['threshold']
+    else:
+        threshold=0.75
+    if 'max_core' in opts:
+        max_core = opts['max_core']
+    else:
+        max_core = 4
+
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+    use_mult_gpu = False
+    use_gpu = False
+    if 'gpu' in opts:
+        gpu_select = str(opts['gpu'])
+        print("Using %s" % gpu_select)
+        os.environ["CUDA_VISIBLE_DEVICES"] = gpu_select
+        if gpu_select == '':
+            use_gpu = False
+        else:
+            use_gpu = True
+            num_gpu = len(gpu_select.split(','))
+            if num_gpu > 1:
+                use_mult_gpu = True
+    if 'gpu_memory_limit' in opts:
+        gpu_memory_limit = 1024 * opts['gpu_memory_limit']
+        gpu_logical_set = True
+
+    else:
+        gpu_logical_set = False
+
+    # Setting computing device
+    if use_gpu:
+        if use_mult_gpu:
+            gpus = tf.config.list_physical_devices('GPU')
+            if gpu_logical_set:
+                for gpu in gpus:
+                    tf.config.set_logical_device_configuration(gpu,[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
+                gpus = tf.config.list_logical_devices('GPU')
+            else:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+        else:
+            if gpu_logical_set:
+                gpus = tf.config.list_physical_devices('GPU')
+                tf.config.set_logical_device_configuration(gpus[0],[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
+
+
+
+    fs = sorted(glob.glob(dirpath + "/*.pq*"))
     trnas = []
 
-    X_train = []
-    Y_train = []
     X_test = []
     Y_test = []
 
-    for f in fs:
+    wlen = 0
+    with Pool(processes=max_core) as pool:
+        inp_prepare = [(fid,f) for fid,f in enumerate(fs)]
+        result = pool.map(prepare_data,inp_prepare)
+        for r in result:
+            trnas.append(r['trna'][0])
+            X_test.extend(r['x'])
+            Y_test.extend(r['y'])
+            wlen = r['wlen']
 
-        pqt = pq.read_table(f,
-                            columns=['read_id', 'trna','trimsignal'])
-
-        dfp = pqt.to_pandas()
-        cnt = 0
-        wlen = 0
-        for idx, row in dfp.iterrows():
-            trna = row[1]
-            signal = row[2]
-            if wlen ==0:
-                wlen = len(signal)
-
-            if cnt % 12 >= 2:
-                X_train.append(signal)
-                Y_train.append(trna)
-            else:
-                X_test.append(signal)
-                Y_test.append(trna)
-
-            cnt+=1
-
-        trna = dfp["trna"].unique()
-        trnas.append(trna)
-
+    trnas = list(chain.from_iterable(trnas))
     trnas = sorted(trnas)
     # name to index
-    Y_train = list(map(lambda trna: trnas.index(trna), Y_train))
     Y_test = list(map(lambda trna: trnas.index(trna), Y_test))
-
-
-    num_classes = np.unique(Y_train).size
-    #
+    num_classes = len(np.unique(Y_test))
 
     test_x = np.reshape(X_test, (-1, wlen, 1))
     testy_noncategorical = Y_test
 
-
-    #model = wavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-    model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-
     outweight = outdir + "learent_arg_weight.h5"
     if not path.isfile(outweight):
         outweight = outdir + "/learent_arg_weight.h5"
-
-    model.load_weights(outweight)
-    #
+    if use_mult_gpu and gpu_logical_set:
+        strategy = tf.distribute.MirroredStrategy(gpus)
+        with strategy.scope():
+            model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=len(trnas))
+            model.load_weights(outweight)
+    else:
+        model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=len(trnas))
+        model.load_weights(outweight)
 
     prediction = model.predict(test_x, batch_size=None, verbose=0, steps=None)
-    probthres = 0.75
     retdict = {}
     cnt = -1
+    prob = []
     for row in prediction:
 
-        # incriment
+        cnt += 1
+        rdata = np.array(row)
+        maxidxs = np.where(rdata == rdata.max())
+        prob.append(rdata.max())
+        ans = testy_noncategorical[cnt]
+        if len(maxidxs) > 1:
+            continue  # multiple hit
+        maxidx = maxidxs[0]
+
+        if ans in retdict:
+            ridxs = retdict[ans]
+            ridxs[maxidx] = ridxs[maxidx] + 1
+        else:
+            ridxs = np.zeros(num_classes)
+            retdict[ans] = ridxs
+            ridxs[maxidx] = ridxs[maxidx] + 1
+    print("average prob.: ",np.mean(prob))
+    print("std: ",np.std(prob))
+
+    data = [list(retdict[i]) for i in range(num_classes)]
+
+    df = pd.DataFrame(data, columns=trnas)
+    df.to_csv(csvout,index=False)
+
+    #probthres = np.mean(prob) #- np.std(prob)
+    probthres = threshold
+    retdict = {}
+    cnt = -1
+    prob = []
+    for row in prediction:
+
         cnt += 1
         rdata = np.array(row)
         if rdata.max() < probthres:
             continue
         maxidxs = np.where(rdata == rdata.max())
+        prob.append(rdata.max())
         ans = testy_noncategorical[cnt]
         if len(maxidxs) > 1:
             continue  # multiple hit
@@ -124,21 +195,13 @@ def evaluate(dirpath,outdir,csvout):
             retdict[ans] = ridxs
             ridxs[maxidx] = ridxs[maxidx] + 1
 
-    #
-    data = []
-    title = []
-    title.append("/")
-    title.extend(trnas)
-    for i in range(num_classes):
-        trna = trnas[i]
-        line = []
-        line.append(trna)
-        line.extend(list(retdict[i]))
-        data.append(line)
+    print("trimmed average prob.: ",np.mean(prob))
+    print("trimmed std: ",np.std(prob))
 
-    df = pd.DataFrame(data, columns=title)
-    df.to_csv(csvout)
+    data = [list(retdict[i]) for i in range(num_classes)]
 
+    df = pd.DataFrame(data, columns=trnas)
+    df.to_csv(csvout2,index=False)
 
 
 
