@@ -85,7 +85,11 @@ def evaluate(opts):
         else:
             if gpu_logical_set:
                 gpus = tf.config.list_physical_devices('GPU')
-                tf.config.set_logical_device_configuration(gpus[0],[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
+                print("check gpu list: ",gpus)
+                if isinstance(gpus,list):
+                    tf.config.set_logical_device_configuration(gpus[0],[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
+                else:
+                    tf.config.set_logical_device_configuration(gpus,[tf.config.LogicalDeviceConfiguration(memory_limit=gpu_memory_limit)])
 
     outweight = outdir + "learent_arg_weight.h5"
     if not os.path.isfile(outweight):
