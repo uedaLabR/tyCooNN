@@ -20,7 +20,7 @@ def generatePqForTrainingAll(paramPath,listOfIOPath,takeCount=12000):
         genaratePqForTraining(paramPath, tRNALabel, indirs, outpq, takeCount)
 
 
-def genaratePqForTraining(paramPath,tRNALabel,indirs,outpq,takeCount=12000):
+def genaratePqForTraining(paramPath,tRNALabel,indirs,outpq,takeCount=1200):
 
     param = ut.get_parameter(paramPath)  # setting of file path and max core
 

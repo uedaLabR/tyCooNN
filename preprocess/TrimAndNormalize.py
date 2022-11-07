@@ -267,14 +267,17 @@ def _format(read,param):
     trimsignal = read.trimmedSignal
     if read.trimSuccess:
         formatsig = binned(trimsignal, param.trimlen)
+        # print(formatsig)
         zoformatsig = zeroToOne(formatsig)
         read.formatSignal = zoformatsig
     return read
 
 def zeroToOne(formatsig):
 
-    a = formatsig + 1 / 2
-    return np.clip(a, 0, 1)
+
+    formatsig = np.clip(formatsig, -1.5, 1.5)
+    formatsig = formatsig + 1.5  / 3
+    return np.clip(formatsig, 0, 1)
 
 def binned(trimsignal, trimlength, mode=1):
 

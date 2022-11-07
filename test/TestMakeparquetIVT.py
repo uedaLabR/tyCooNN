@@ -6,7 +6,7 @@ import sys
 
 def writeIOFile():
 
-    path_w = "/share/trna/tyCooNNTest/inputs.txt"
+    path_w = "/share/trna/tyCooNNTest/inputsIVT.txt"
     fw = open(path_w, mode='w')
 
     basecall_path = "/share/trna/testdata/ecolibasecalled/"

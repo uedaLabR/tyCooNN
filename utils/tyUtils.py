@@ -79,6 +79,7 @@ def get_fast5_reads_dirs(directories:list,MAX_CORE:int,readmax = -1):
     if readmax > 0:
         upto = min(readmax,len(f5list)-1)
         f5list = f5list[0:upto]
+    #f5list = f5list[0:3]# tempolary to speed up
     ncore = get_number_of_core(MAX_CORE=MAX_CORE)
     with Pool(ncore) as p:
         reads = p.map(get_fast5_reads_from_file, f5list)
