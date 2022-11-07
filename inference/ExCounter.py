@@ -3,13 +3,16 @@ import numpy as np
 class Counter():
 
 
-    def __init__(self, trnas):
+    def __init__(self, trnas,threshold = 0.75):
 
         tlen = len(trnas)
 
         self.filterFlgCnt = np.zeros(9)
         self.passfilterCnt = np.zeros(tlen)
         self.allCnt = np.zeros(tlen)
+
+        self.tick = 0
+        self.threshold = threshold
 
     def sumup(self,counter):
 
@@ -20,7 +23,7 @@ class Counter():
     def inc(self,minicnt):
 
         self.filterFlgCnt[minicnt.filterFlg] = self.filterFlgCnt[minicnt.filterFlg]+1
-        if minicnt.filterFlg ==0 and minicnt.trimSuccess and minicnt.maxval > 0.75:
+        if minicnt.filterFlg == 0 and minicnt.trimSuccess and minicnt.maxval >= self.threshold:
 
             self.passfilterCnt[minicnt.tRNAIdx] =  self.passfilterCnt[minicnt.tRNAIdx]+1
 
@@ -28,7 +31,7 @@ class Counter():
 
             self.allCnt[minicnt.tRNAIdx] = self.allCnt[minicnt.tRNAIdx] + 1
 
-
+        self.tick += 1
 
 
 class MiniCounter():

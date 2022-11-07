@@ -113,5 +113,7 @@
             trimSuccess: trimSuccess　
   
   
-  
+## Additional information
+
+  [Readme more](./README_ADDITIONAL)
 
