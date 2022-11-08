@@ -25,7 +25,7 @@ def writeIOFile():
         basename = os.path.basename(os.path.dirname(f)).replace("ecoli_rcc_","")
         basename = basename.split("_")[1]
         #graphpath = "/share/trna/result/testcnntrex/"+basename+".pdf"
-        pqpath = "/share/trna/tyCooNNTest/trim12000/"+basename+".pq"
+        pqpath = "/share/trna/tyCooNNTest/trim2400/"+basename+".pq"
         lst = ",".join(dirlist)
         print(basename,lst,pqpath)
         fw.write(basename+"\t"+lst+"\t"+pqpath+" \n")
@@ -43,7 +43,7 @@ def genaratePq():
     paramPath = '/share/trna/tyCooNN/setting.yaml'
     # inputs = "/share/trna/tyCooNNTest/inputs.txt"
     inputs = "/share/trna/tyCooNNTest/inputs.txt"
-    pqg.generatePqForTrainingAll(paramPath,inputs,takeCount=1200)
+    pqg.generatePqForTrainingAll(paramPath,inputs,takeCount=2400)
 
 genaratePq()
 

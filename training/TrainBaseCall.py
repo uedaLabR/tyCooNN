@@ -68,6 +68,10 @@ def formatY(Y):
 
 def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
 
+    # wlen = 8192
+    # num_classes = 0
+    # model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
+    # model.summary()
 
     print(dirpath)
     fs = glob.glob(dirpath + "/*.pq*")
