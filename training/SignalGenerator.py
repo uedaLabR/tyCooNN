@@ -35,6 +35,12 @@ def formatY(Y,num_classes):
    Y = np.reshape(Y, (-1, 1,))
    return keras.utils.to_categorical(Y, num_classes)
 
+def formatYMatrix(Y,num_classes):
+
+   Y = np.reshape(Y, (-1, 99, 34))
+   return Y
+
+
 import matplotlib.pyplot as plot
 class ArgumentlGenerator(object):
 
@@ -76,6 +82,48 @@ class ArgumentlGenerator(object):
                 batch_Y = formatY(batch_Y,self.class_count)
                 yield (batch_X,batch_Y)
 
+import matplotlib.pyplot as plot
+class ArgumentlGeneratorMatrix(object):
+
+    def __init__(self,x, y, batch_size,signal_size, class_count, augmentation_factor,epoch,labeldic):
+
+        self.x = np.array(x,np.float32)
+        self.y = y
+        self.batch_size = batch_size
+        self.signal_size = signal_size
+        self.class_count = class_count
+        self.augmentation_factor = augmentation_factor
+        self.epoch = epoch
+        self.labeldic = labeldic
+
+    def numbatch(self):
+
+        return  int((len(self.x)*self.augmentation_factor - 1) / self.batch_size) + 1
+
+    def flow(self):
+
+        for n in range(self.epoch+1):
+
+            augmented_signals, augmented_labels \
+                = da.augment_data(self.x, self.y,self.signal_size, self.augmentation_factor)
+            #augmented_signals, augmented_labels = shuffle_samples(augmented_signals, augmented_labels)
+            print("augmented_labels",augmented_labels)
+
+            num_batches_per_epoch = self.numbatch()
+            for batch_num in range(num_batches_per_epoch):
+                start_index = batch_num * self.batch_size
+                end_index = min((batch_num + 1) * self.batch_size, len(augmented_signals))
+                batch_X = augmented_signals[start_index: end_index]
+                batch_Y = augmented_labels[start_index: end_index]
+
+
+                batch_X = formatX(batch_X,self.signal_size)
+                # print("self.labeldic",self.labeldic)
+                batch_Y = list(map(lambda trna: self.labeldic[trna],batch_Y))
+                batch_Y = np.array(batch_Y)
+                batch_Y = np.reshape(batch_Y, (-1, 99, 34))
+                print("batch Y")
+                yield (batch_X,batch_Y)
 
 
 class BatchIterator(object):
@@ -105,3 +153,4 @@ class BatchIterator(object):
                 batch_X = formatX(batch_X,self.signal_size)
                 batch_Y = formatY(batch_Y,self.class_count)
                 yield (batch_X,batch_Y)
+

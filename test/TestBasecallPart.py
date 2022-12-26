@@ -11,11 +11,10 @@ def testTrain():
     # input = "/share/trna/tyCooNNTest/trim12000/"
     #input = "/share/trna/tyCooNNTest/trim12000"
     input = "/share/trna/tyCooNNTest/trim2400"
-    input2 = "/share/trna/tyCooNNTest/KO/selected"
-    input3 = "/share/trna/tyCooNNTest/trim2400IVT"
+    input2 = "/share/trna/tyCooNNTest/trim2400IVT"
 
-    inputs = [input,input2,input3]
-    outdir = "/share/trna/testbasecalled/testkoivt2400"
+    inputs = [input,input2]
+    outdir = "/share/trna/testbasecalled/testpartialbc"
 
 
     # sequencemaxrix = "/share/trna/testbasecalled/ecoliModseq.csv"
@@ -32,7 +31,7 @@ def testTrain():
     # epoch = 100
     # traning.train(inputs, outdir,labeldic, epoch)
 
-    epoch = 10
+    epoch = 100
     traning.train(inputs, outdir,labeldic, epoch,data_argument = 2)
 
 # import tensorflow as tf

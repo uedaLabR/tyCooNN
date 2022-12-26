@@ -35,7 +35,7 @@ def genaratePqForTraining(paramPath,tRNALabel,indirs,outpq,takeCount=1200):
     #
     datalist = []
     for read in format_reads:
-        tp = (read.read_id,tRNALabel,read.formatSignal)
+        tp = (read.read_id,tRNALabel,read.formatSignal,read.trace,read.move)
         datalist.append(tp)
 
     df = pd.DataFrame(datalist, columns=['read_id', 'trna', 'trimsignal'])

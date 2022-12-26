@@ -37,4 +37,7 @@ class Read():
         #trim
         self.trimSuccess = False
         self.filterFlg = 0
+        self.inferencedtRNA = ""
+
+        self.normSig = None
 

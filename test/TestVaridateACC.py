@@ -11,13 +11,16 @@ def testTrain():
     # input = "/share/trna/tyCooNNTest/trim12000/"
     # input2 = "/share/trna/tyCooNNTest/trim12000IVT/"
 
-    input = "/share/trna/tyCooNNTest/trim12000"
+    input = "/share/trna/tyCooNNTest/trim2400"
     input2 = "/share/trna/tyCooNNTest/KO/selected"
+    input3 = "/share/trna/tyCooNNTest/trim2400IVT"
 
-    outdir = "/share/trna/testbasecalled/testko2"
+    inputs = [input,input2,input3]
+
+    outdir = "/share/trna/testbasecalled/testkoivt2400"
    # sequencemaxrix = "/share/trna/testbasecalled/ecoliModseq.csv"
     #sequencemaxrix = "/share/trna/testbasecalled/ecoliModseq_IVT.csv"
-    sequencemaxrix = "/share/trna/testbasecalled/ecoliModseq_KO.csv"
+    sequencemaxrix = "/share/trna/testbasecalled/ecoliModseq_IVTKO.csv"
     modkind = "/share/trna/testbasecalled/modkind.csv"
 
     labeldic = labelMatrixUtil.getLabelMatrixDic(sequencemaxrix,modkind)
@@ -27,12 +30,16 @@ def testTrain():
     epoch = 100
    # weightpath = "/share/trna/testbasecalled/test/learent_weight.h5"
    # weightpath = "/share/trna/testbasecalled/testivt/learent_weight.h5"
-    weightpath = "/share/trna/testbasecalled/testko2/learent_weight.h5"
-    varidate.varidate(input,input2, outdir,labeldic,modlist,samplenames,weightpath)
+    weightpath = "/share/trna/testbasecalled/testkoivt2400/learent_weight.h5"
+    varidate.varidate(inputs, outdir,labeldic,modlist,samplenames,weightpath)
 
 
     # epoch = 10
     #traning.train(input, outdir, epoch,data_argument =3)
 
-testTrain()
+import os
+import tensorflow as tf
+#os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
+with tf.device('/CPU:0'):
+    testTrain()
 

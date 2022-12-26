@@ -64,17 +64,18 @@ def _merge(x,y,results,shuffle_indices):
 
     for idx in range(len(shuffle_indices)):
         i = shuffle_indices[idx]
-        x[idx] = results[i][0]
+        x[idx] = results[i][0].flatten()
+        # print(results[i][1])
         y[idx] = results[i][1]
     return x,y
 
 
-@jit
+#@jit
 def modify_signal_l(signal, label):
     sig = modify_signal(signal)
     return (sig, label)
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def modify_signal(signal):
 
     modification_count = len(signal) * 0.3
@@ -89,7 +90,7 @@ def modify_signal(signal):
     new_signal = np.empty(len(signal), np.float32)
     j = 0
     for i, val in enumerate(signal):
-        if i in duplication_positions and j < len(signal):
+        if i in duplication_positions and j < len(signal)-1:
 
             new_signal[j] = val
             j += 1

@@ -70,16 +70,14 @@ from utils.GraphManager import GraphManager
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def varidate(dirpath,dirpath2,outdir,labeldic,modlist,samplenames,weightpath):
+def varidate(dirpaths,outdir,labeldic,modlist,samplenames,weightpath):
 
-    print(dirpath)
-    fs = glob.glob(dirpath + "/*.pq*")
-    # fs = fs[0:3] #for debug
-    if dirpath2 is not None:
-        fs2 = glob.glob(dirpath2 + "/*.pq*")
-        fs.extend(fs2)
-    #fs = fs[0:3] #for debug
-    print(fs)
+
+    fl = []
+    for dirpath in dirpaths:
+        fs = glob.glob(dirpath + "/*.pq*")
+        fl.extend(fs)
+
     trnas = []
 
     X_train = []
@@ -87,7 +85,7 @@ def varidate(dirpath,dirpath2,outdir,labeldic,modlist,samplenames,weightpath):
     X_test = []
     Y_test = []
     wlen = 0
-    for f in fs:
+    for f in fl:
 
         print(f)
         pqt = pq.read_table(f,
@@ -167,26 +165,27 @@ def varidate(dirpath,dirpath2,outdir,labeldic,modlist,samplenames,weightpath):
 
         l = l+1
 
-    gp = outdir + "/graph.csv"
+    gp = outdir + "/graph"
     gm = GraphManager(gp)
-    # numl = list(range(1,100))
-    #
-    # for k in sorted(list(smd.keys())):
-    #
-    #     v = smd[k]
-    #     df = pd.DataFrame(v,columns=modlist,index=numl)
-    #     fig = plt.figure(figsize=(60, 60))
-    #     sns.heatmap(df, annot=True, fmt='g', cmap='Blues',cbar=False)
-    #     plt.title(k)
-    #     gm.add_figure(fig)
-    #
-    #     df = pd.DataFrame(labeldic[k],columns=modlist,index=numl)
-    #     fig = plt.figure(figsize=(60, 60))
-    #     sns.heatmap(df, annot=True, fmt='g', cmap='Blues',cbar=False)
-    #     plt.title(k+"_Ans")
-    #     gm.add_figure(fig)
-    #
-    # gm.save()
+    numl = list(range(1,100))
+    #tRNAkeys = list(smd.keys())
+    tRNAkeys = ["fmet","ile2","leu1","tyr"]
+    for k in tRNAkeys:
+
+        v = smd[k]
+        df = pd.DataFrame(v,columns=modlist,index=numl)
+        fig = plt.figure(figsize=(60, 60))
+        sns.heatmap(df, annot=True, fmt='g', cmap='Blues',cbar=False)
+        plt.title(k)
+        gm.add_figure(fig)
+
+        df = pd.DataFrame(labeldic[k],columns=modlist,index=numl)
+        fig = plt.figure(figsize=(60, 60))
+        sns.heatmap(df, annot=True, fmt='g', cmap='Blues',cbar=False)
+        plt.title(k+"_Ans")
+        gm.add_figure(fig)
+
+    gm.save()
 
     cntdict = {}
     for l,p in zip(Y_test_str,predictY):

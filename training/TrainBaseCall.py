@@ -12,8 +12,7 @@ import csv
 import numpy as np
 from tensorflow.keras.callbacks import ModelCheckpoint
 import utils.tyUtils as ut
-from training.SignalGenerator import ArgumentlGenerator
-from training.SignalGenerator import BatchIterator
+from training.SignalGenerator import ArgumentlGeneratorMatrix
 import tensorflow as tf
 import tensorflow_addons as tfa
 import tensorflow
@@ -64,21 +63,28 @@ def formatY(Y):
    Y = np.reshape(Y, (-1, 99,34))
    return Y
 
+def toNumdic(trnas,labeldic):
+
+    rd = {}
+    n = 0
+    for trna in trnas:
+
+        rd[n] = labeldic[trna]
+        n += 1
+    return rd
 
 
-def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
+def train(dirpaths,outdir,labeldic,epoch = 50,data_argument = 0):
 
-    # wlen = 8192
-    # num_classes = 0
-    # model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
-    # model.summary()
+    wlen = 8192
+    num_classes = 0
+    model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
 
-    print(dirpath)
-    fs = glob.glob(dirpath + "/*.pq*")
-    #fs = fs[0:3] #for debug
-    if dirpath2 is not None:
-        fs2 = glob.glob(dirpath2 + "/*.pq*")
-        fs.extend(fs2)
+    fl = []
+    for dirpath in dirpaths:
+        fs = glob.glob(dirpath + "/*.pq*")
+        fl.extend(fs)
+
 
     trnas = []
 
@@ -88,7 +94,7 @@ def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
     Y_test = []
     wlen = 0
     fcnt = 0
-    for f in fs:
+    for f in fl:
 
         postfix =""
         # if dirpath2 in f:
@@ -117,32 +123,32 @@ def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
             else:
                 X_test.append(signal)
                 Y_test.append(trna)
-            if cnt >= 1200:
+            if cnt >= 2400:
                 break
 
             cnt+=1
         print(cnt)
 
         trna = dfp["trna"].unique()
+        trna = trna[0].lower()
         trnas.append(trna)
         print(trna)
 
     trnas = sorted(trnas)
-    # name to index
-    Y_train = list(map(lambda trna: labeldic[trna], Y_train))
-    Y_test = list(map(lambda trna: labeldic[trna], Y_test))
 
-    Y_train = np.array(Y_train)
-    Y_test = np.array(Y_test)
 
-    Y_train = np.reshape(Y_train, (-1, 99, 34))
-    Y_test = np.reshape(Y_test, (-1, 99, 34))
-
-    # num_classes = np.unique(Y_train).size
     #
     num_classes = 0
+    Y_test = list(map(lambda trna: labeldic[trna], Y_test))
+    Y_test = np.array(Y_test)
+    Y_test = np.reshape(Y_test, (-1, 99, 34))
 
     if data_argument == 0:
+
+        # name to index
+        Y_train = list(map(lambda trna: labeldic[trna], Y_train))
+        Y_train = np.array(Y_train)
+        Y_train = np.reshape(Y_train, (-1, 99, 34))
 
         lr = 0.0008
         model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
@@ -150,8 +156,9 @@ def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
         batch_size = 256
 
     if data_argument > 0:
+
         lr = 0.00001
-        model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes,do_r =0.1)
+        #model = cnnwavenet.build_network(shape=(None, wlen, 1), num_classes=num_classes)
         optim = keras.optimizers.Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                       amsgrad=False)
         optim = tfa.optimizers.SWA(optim)
@@ -187,6 +194,7 @@ def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
 
     test_x = formatX(X_test, wlen)
     test_y = formatY(Y_test)
+
     if data_argument == 0:
 
         train_x = formatX(X_train,wlen)
@@ -198,12 +206,18 @@ def train(dirpath,dirpath2,outdir,labeldic,epoch = 50,data_argument = 0):
                   shuffle=True, validation_data=(test_x, test_y),callbacks=[modelCheckpoint])
     else:
 
-        signalgen = ArgumentlGenerator(X_train, Y_train, batch_size,wlen,num_classes,data_argument,epoch)
-        batchgen = BatchIterator(X_test, Y_test, batch_size,wlen,num_classes,epoch)
-        # history = model.fit(signalgen.flow(),steps_per_epoch=signalgen.numbatch(), verbose=1,epochs=epoch,
-        #           shuffle=False, validation_data=(test_x, test_y),callbacks=[modelCheckpoint])
-        history = model.fit_generator(signalgen.flow(),steps_per_epoch=signalgen.numbatch(),
-                                      validation_data=batchgen.flow(),validation_steps=batchgen.numbatch(),epochs=epoch,callbacks=[modelCheckpoint])
+        train_x = formatX(X_train,wlen)
+        Y_train = list(map(lambda trna: trnas.index(trna), Y_train))
+        train_y = Y_train
+        #
+        labeldicnum = toNumdic(trnas,labeldic)
+
+        signalgen = ArgumentlGeneratorMatrix(train_x, train_y, batch_size,wlen,num_classes,data_argument,epoch,labeldicnum)
+        # batchgen = BatchIteratorMatrix(train_x, train_y, batch_size,wlen,num_classes,epoch)
+        history = model.fit(signalgen.flow(),steps_per_epoch=signalgen.numbatch(), verbose=1,epochs=epoch,
+                  shuffle=False, validation_data=(test_x, test_y),callbacks=[modelCheckpoint])
+        # history = model.fit_generator(signalgen.flow(),steps_per_epoch=signalgen.numbatch(),
+        #                               validation_data=batchgen.flow(),validation_steps=batchgen.numbatch(),epochs=epoch,callbacks=[modelCheckpoint])
 
     FIG_SIZE_WIDTH = 12
     FIG_SIZE_HEIGHT = 10

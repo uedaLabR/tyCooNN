@@ -73,7 +73,7 @@ def WaveNetResidualConv1D(num_filters, kernel_size, stacked_layer):
 
 
 
-def build_network(shape, num_classes,do_r = 0.2):
+def build_network(shape, seqsize,do_r = 0.2):
 
     def ljuxt(*fs):
         return rcompose(juxt(*fs), list)
@@ -149,7 +149,7 @@ def build_network(shape, num_classes,do_r = 0.2):
                        Activation('mish'),
                        inception())
 
-    outfilterlen = 34
+    num_modnucs = 34
     x = nnBlock(l_input)
     x = Conv1D(num_filters_, 1, padding='same')(x)
     x = WaveNetResidualConv1D(num_filters_, kernel_size_, stacked_layers_[0])(x)
@@ -160,13 +160,13 @@ def build_network(shape, num_classes,do_r = 0.2):
     x = Conv1D(num_filters_*8, 1, padding='same')(x)
     x = WaveNetResidualConv1D(num_filters_*8, kernel_size_, stacked_layers_[3])(x)
     x = Conv1D(num_filters_ * 16, 1, padding='same')(x)
-    x = Dense(34, activation='relu')(x)
+    x = Dense(num_modnucs, activation='relu')(x)
     x = Flatten()(x)
-    x = Dense(99*34)(x)
-    x = Reshape((99, 34))(x)  # len = 95, 33 nucleotide+mod
+    x = Dense(seqsize*num_modnucs)(x)
+    x = Reshape((seqsize, num_modnucs))(x)  # len = 95, 33 nucleotide+mod
 
 
-    l_output = Dense(34, dtype='float32',activation='sigmoid')(x)
+    l_output = Dense(num_modnucs, dtype='float32',activation='sigmoid')(x)
 
 
     model = Model(inputs=[l_input], outputs=[l_output])

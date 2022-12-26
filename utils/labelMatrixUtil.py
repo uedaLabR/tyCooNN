@@ -29,6 +29,30 @@ def toLabelM(nl,adata):
 
     return da
 
+def toLabelMNum(nl,adata,num):
+
+    s = 0
+    e = 10
+    for m in range(num):
+        s+=5
+        e+=5
+
+
+    da = np.zeros((10,34))
+    # print(len(adata))
+    for n in range(len(adata)):
+
+        if n>=s and n<=e:
+            st = adata[n]
+            st = st.lower()
+            idx = 0
+            if st in nl:
+                idx = nl.index(st)
+                # print(idx,s,nl)
+            da[n-s][idx] = 1.0
+
+    return da
+
 def getLabelMatrixDic(sequencemaxrix,modkind):
 
     nl = toNameList(modkind)
@@ -41,6 +65,24 @@ def getLabelMatrixDic(sequencemaxrix,modkind):
             adata = aline[1:]
 
             lm = toLabelM(nl,adata)
+
+            print(alabel, lm)
+            d[alabel] = lm
+
+    return d
+
+def getLabelMatrixDicNum(sequencemaxrix,modkind,num):
+
+    nl = toNameList(modkind)
+    d = {}
+    with open(sequencemaxrix, encoding='utf-8') as f:
+        lines = f.readlines()
+        for line in lines:
+            aline = line.split(',')
+            alabel = aline[0].lower()
+            adata = aline[1:]
+
+            lm = toLabelMNum(nl,adata)
 
             print(alabel, lm)
             d[alabel] = lm

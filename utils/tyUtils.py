@@ -69,7 +69,13 @@ def get_fast5_reads_dirs(directories:list,MAX_CORE:int,readmax = -1):
     f5list = []
     for directory in directories:
         print('load fast5 reads from {}'.format(directory))
-        f5list.extend(get_fast5_files_in_dir(directory))
+        if directory.endswith(".fast5"):
+            #file
+            f5list.append(directory)
+            # if len(f5list) > 150:
+            #     break
+        else:
+            f5list.extend(get_fast5_files_in_dir(directory))
 
     #print('fast5 list {}'.format(f5list))
     if len(f5list) == 1:
@@ -107,6 +113,7 @@ def getOrNone(groups,partialKey):
     return r
 
 def get_fast5_reads_from_file(fast5_filepath:str):
+
     reads = []
     with get_fast5_file(fast5_filepath, mode="r") as f5:
         for read in f5.get_reads():

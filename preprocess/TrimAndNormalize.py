@@ -242,6 +242,7 @@ def trimAdaptorEach(read,param):
 
     read.trimSuccess = trimSafeIdx > 0 and trimNormSig is not None
     read.filterFlg = filterFlg(read,param,read.trimSuccess)
+    read.normSig = normsig
 
     return read
 
