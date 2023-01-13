@@ -1,6 +1,7 @@
 import pyarrow.parquet as pq
 import mappy as mp
 import pysam
+import pandas as pd
 
 
 def getChrom(f):
@@ -89,27 +90,9 @@ def getBinkey(f):
     return f.split("/")[-2].replace("sortkey=", "")
 
 
-import glob
-def getFiles(path, chrom, strand, start, end):
 
-    sortedfile = []
-
-    l = glob.glob(path+"/*/*/*/*.parquet")
-    for fileNamePath in l:
-
-        chromFromPath = getChrom(fileNamePath)
-        strandP = getStrand(fileNamePath) == 1
-        sortKey = getBinkey(fileNamePath)
-        #
-        keyCheck = _keyCheck(start, end, sortKey)
-
-        if (chromFromPath == chrom) and (strand == strandP) and keyCheck:
-
-            if checkMeta(fileNamePath, start, end):
-                sortedfile.append(fileNamePath)
-
-    return sortedfile
-
+import scipy.signal as scisignal
+from scipy.interpolate import interp1d
 class RowReader:
 
     def getChrom(self,f):
@@ -144,21 +127,16 @@ class RowReader:
 
 
 
-    def __init__(self,dir):
+    def __init__(self,file):
 
         #files = self.getFiles(path,chrom,strand,findexs)
-        data = None
-        sortedfile = getFiles(dir)
-        data = None
-        for file in sortedfile:
-
-            dataadd = pq.read_table(file, columns=['trna','r_st', 'r_en','q_st','q_en','cigar','traceintervals','signal']).to_pandas()
-            if data is None:
-                data = dataadd
-            else:
-                data = pd.concat([data, dataadd])
-
         #
+        # print(file)
+        self.df = pd.read_parquet(file, columns=['read_id', 'score', 'reference_id', 'alnstart', 'cigar', 'otherhit',
+                                          'traceseq', 'tbpath', 'trace', 'signal', 'reference_name', 'refseq',
+                                          'modseq', 'ismod', 'isprimer', 'mean_qscore'])
+
+
 
     import pysam
     def correctCigar(self,targetPos,cigar):
@@ -198,121 +176,89 @@ class RowReader:
                 relpos = relpos + cigarlen
 
         cidx+=1
-
         return 0
 
 
-    def getRelativePos(self, start, end, cigar, pos):
-
-        if self.strand == True:
-            return self.getRelativePosP(start, end, cigar, pos)
-        else:
-            return self.getRelativePosN(start, end, cigar, pos)
-
-    def getRelativePosP(self, _start, end, cigar, pos):
-
-        # tp = (strand,start,end,cigar,pos,traceintervalLen)
-        rel0 = pos - _start
-        rel = self.correctCigar(rel0, cigar)
-        start = rel
-        startmargin = 8
-        if start < startmargin:
-            # do not use lower end
-            return None
-
-        rel = pos - _start + 6
-        end = self.correctCigar(rel, cigar)
-        if end < 0: # intron
-            end = start+6
-        return start, end
-
-    def getRelativePosN(self, start, end, cigar, pos):
-
-        # tp = (strand,start,end,cigar,pos,traceintervalLen)
-        margin = 1
-        rel0 = end - pos - margin
-        rel = self.correctCigar(rel0, cigar)
-        start = rel
-        startmargin = 8
-        if start < startmargin:
-            # do not use lower end
-            return None
-
-        rel = end - pos + 6 - margin
-        end = self.correctCigar(rel, cigar)
-        if end < 0: # intron
-            end = start+6
-        # print("start-end",start, end)
-        return start, end
-
-    def calcStartEnd(self,start,end,cigar,pos):
-
-        rp = self.getRelativePos(start,end,cigar,pos)
-        if rp is None:
-            return None
-        # print(rp)
-        #print("offset", offset)
-        relativeStart, relativeEnd = rp
-        if abs(relativeStart-relativeEnd) != 6:
-            return None
-        return relativeStart,relativeEnd
 
 
 
-    def getOneRow(self,row, pos):
 
-        start = row['r_st']
-        end = row['r_en']
-        q_start = row['q_st']
-        q_end = row['q_en']
+    def getOneRow(self,row, start,end):
+
+        a_start = row['alnstart']
+        traceboundary =  row['tbpath']
 
         cigar = row['cigar']
-        traceboundary = row['traceintervals']
         signal = row['signal']
+        primerlen = 4
+
         UNIT = 10
         UNITLENGTH = 1024
 
-        sted = self.calcStartEnd(start,end,cigar,pos)
-        # print(sted,start,end,cigar,pos)
-        if sted is None:
-            return None
-        relativeStart,relativeEnd = sted
-        signal_start = traceboundary[relativeStart]*UNIT
-        signal_end = traceboundary[relativeEnd]*UNIT
 
+        start = start - a_start + primerlen
+        end = end - a_start + primerlen
+        # print("a_start",a_start)
+
+        start = self.correctCigar(start, cigar)
+        end = self.correctCigar(end, cigar)
+
+        if start < 0 or end < 0:
+            return None
+        if start > len(traceboundary) or end > len(traceboundary):
+            return None
+        if signal is None:
+            return None
+
+        signal_start = traceboundary[start]*UNIT
+        signal_end = traceboundary[end]*UNIT
         subsignal = signal[signal_start:signal_end]
 
-        if len(subsignal) == 0:
-            return None
-
-        info = (start, end, q_start, q_end, cigar)
-
         binsignal = self.binSignal(subsignal,UNITLENGTH)
-        if binsignal is None:
-            return None
+        return  binsignal
 
-        return  binsignal, info
 
-    def getRowData(self, pos, takecnt=-1):
+    def downsample(self,array, npts):
 
-        reloadUnit = 100
-        if self.bufData is None or abs(pos-self.start) % reloadUnit:
-            self.load(pos)
+        interpolated = interp1d(np.arange(len(array)), array, axis=0, fill_value='extrapolate')
+        downsampled = interpolated(np.linspace(0, len(array), npts))
+        # downsampled = scisignal.resample(array, npts)
+        return downsampled
+
+    def binSignal(self,trimsignal, trimlength, mode=1):
+
+        if len(trimsignal) == trimlength:
+            return trimsignal  # not very likely to happen
+
+        if len(trimsignal) > trimlength:
+            # trim from first
+            return self.downsample(trimsignal, trimlength)
+
+        else:
+            #
+            trimsignal = trimsignal.astype(np.float32)
+            siglen = len(trimsignal)
+            left = trimlength - siglen
+            lefthalf = left // 2
+
+            leftlen = trimlength - siglen - lefthalf
+            ret = np.concatenate([np.zeros(lefthalf), trimsignal, np.zeros(leftlen)])
+
+            return ret
+
+    def getRowData(self, start,end, takecnt=-1):
 
         initfilterdata = []
-        infos = []
-        for index, row in self.bufData.iterrows():
+        for index, row in self.df.iterrows():
 
-            ret = self.getOneRow(row, pos)
+            ret = self.getOneRow(row, start,end)
             if ret is not None:
                 # print(ret.shape)
-                v,i = ret
-                initfilterdata.append(v)
-                infos.append(i)
+                initfilterdata.append(ret)
             if len(initfilterdata) == takecnt:
                 break
 
-        return initfilterdata,infos
+        return initfilterdata
 
 
 

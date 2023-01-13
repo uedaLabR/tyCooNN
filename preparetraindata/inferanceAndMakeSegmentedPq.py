@@ -121,6 +121,8 @@ def evaluateEachFile(param,f5file,outpath,model,trnas,postfix):
             read.inferencedtRNA = maxtrna
             readsret.append(read)
 
+            #print("sig",read.normSig)
+
     return readsret
 
 

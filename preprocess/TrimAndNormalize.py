@@ -205,7 +205,7 @@ def filterFlg(read,param,trimSuccess):
 
 def trimAdaptorEach(read,param):
 
-    sigfrom3p = read.signal
+    sigfrom3p = read.signal[::-1]
     adaptor1med = 0
     if len(read.adapter_signal) > 0:
         adaptor1med = statistics.median(read.adapter_signal)
@@ -235,7 +235,7 @@ def trimAdaptorEach(read,param):
     #
     trimNormSig = None
     if normsig is not None:
-        trimNormSig = normsig[trimSafeIdx:len(normsig)]
+        trimNormSig = normsig[trimSafeIdx:len(normsig)][::-1]
 
     read.trimmedSignal = trimNormSig
     read.normalizemed = mediantoset
