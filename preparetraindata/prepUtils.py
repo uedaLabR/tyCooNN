@@ -59,7 +59,7 @@ def changeClass(x):
     tread = Read(read_id,signal,trace,move,fastq,channel_number,mux,duration,median_before,start_time)
 
     tread.read_id = x.read_id
-    tread.signal = x.normSig
+    tread.signal = x.normSig[::-1] #from 5' prime
     tread.normSig = x.normSig
     tread.trace = x.trace
     tread.adapter_signal = x.adapter_signal

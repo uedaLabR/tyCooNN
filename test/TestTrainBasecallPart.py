@@ -26,12 +26,10 @@ def testTrain():
 
 
     epoch = 100
-    portions = 1
+    portions = 8
     for portion in range(portions):
 
         traning.train(inputs, outdir,labeldic,portion, epoch,data_argument = 2)
-
-
 
 
 testTrain()

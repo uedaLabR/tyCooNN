@@ -127,7 +127,7 @@ def train(dirpaths,outdir,labeldic,portion,epoch = 50,data_argument = 0):
         bname = os.path.basename(f)
         bname = bname.replace(".pq","").lower()
         trnas.append(bname)
-
+    #
     #get KO parquet
     for name in labeldic:
         ns = name.split("_")
@@ -159,6 +159,9 @@ def train(dirpaths,outdir,labeldic,portion,epoch = 50,data_argument = 0):
     print(trnas)
     for f in fl:
         print(n, f)
+        if not os.path.exists(f):
+            continue
+
         trna = trnas[n]
 
         n+=1
